@@ -53,7 +53,7 @@ export default function Blog() {
     }, []);
 
     return (
-        <section ref={sectionRef} className="bg-[#F1F1F1] py-20 lg:py-32">
+        <section id="blog" ref={sectionRef} className="bg-[#F1F1F1] py-20 lg:py-32">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
                 <div className="text-center mb-14 lg:mb-20">
                     <h2 className="text-display-lg text-[#0D0D0D] mb-4">INSIGHTS</h2>

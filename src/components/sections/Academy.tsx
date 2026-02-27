@@ -8,10 +8,11 @@ const CATEGORIES = ["Todos", "Gestão", "Licitações", "Legislativo", "Governan
 const COURSES = [
     {
         id: 1,
-        title: "Gestão de Contratos Públicos",
+        title: "Relacionamento Governamental e Captação de Recursos",
         category: "GESTÃO",
-        students: "+400",
-        image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2070&auto=format&fit=crop",
+        professor: "Daniel Angotti",
+        professorImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&auto=format&fit=crop",
+        image: "/capacursoteste.png",
     },
     {
         id: 2,
@@ -100,7 +101,7 @@ export default function Academy() {
     }, [goNext, goPrev]);
 
     return (
-        <section ref={sectionRef} className="academy-section bg-[#F1F1F1] py-20 lg:py-32">
+        <section id="academy" ref={sectionRef} className="academy-section bg-[#F1F1F1] py-20 lg:py-32">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
                 {/* Section header */}
                 <div className="academy-header text-center mb-12 lg:mb-16">
@@ -167,12 +168,21 @@ export default function Academy() {
                                         style={{ opacity: isCurrent ? 1 : absR <= 1 ? 0.3 : 0 }}
                                     >
                                         <div className="flex items-center mb-3">
-                                            <div className="flex -space-x-2">
-                                                {[1, 2, 3].map(j => (
-                                                    <div key={j} className="w-6 h-6 rounded-full bg-white/20 backdrop-blur border-2 border-white/30" />
-                                                ))}
-                                            </div>
-                                            <span className="ml-2 text-[11px] text-white/70 font-medium">{course.students}</span>
+                                            {course.professor ? (
+                                                <>
+                                                    <img src={course.professorImage} alt={course.professor} className="w-7 h-7 rounded-full object-cover border-2 border-white/30" />
+                                                    <span className="ml-2 text-[11px] text-white/70 font-medium">{course.professor}</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="flex -space-x-2">
+                                                        {[1, 2, 3].map(j => (
+                                                            <div key={j} className="w-6 h-6 rounded-full bg-white/20 backdrop-blur border-2 border-white/30" />
+                                                        ))}
+                                                    </div>
+                                                    <span className="ml-2 text-[11px] text-white/70 font-medium">{course.students}</span>
+                                                </>
+                                            )}
                                         </div>
 
                                         <p className="text-[10px] text-white/60 uppercase tracking-widest font-semibold mb-1.5">
@@ -183,7 +193,7 @@ export default function Academy() {
                                         </h3>
 
                                         {isCurrent && (
-                                            <a href="#" className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
+                                            <a href={course.id === 1 ? "https://modelolpcursoplenum.vercel.app/" : "#"} className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
                                                 Ver Curso <ArrowRight className="w-3 h-3" />
                                             </a>
                                         )}

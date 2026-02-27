@@ -62,26 +62,11 @@ const EVENTS = [
 
 export default function Events() {
     const sectionRef = useRef<HTMLElement>(null);
-    const carouselRef = useRef<HTMLDivElement>(null);
-    const transitionRef = useRef<HTMLDivElement>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [isAnimating, setIsAnimating] = useState(false);
+    const [eventsList, setEventsList] = useState(EVENTS);
 
+    // Initial section reveal animation
     useEffect(() => {
         const ctx = gsap.context(() => {
-            gsap.from(".events-carousel", {
-                opacity: 0,
-                y: 60,
-                duration: 0.9,
-                ease: "power3.out",
-                scrollTrigger: {
-                    trigger: ".events-carousel",
-                    start: "top 80%"
-                }
-            });
-
             gsap.from(".events-header", {
                 opacity: 0,
                 y: 40,
@@ -92,167 +77,39 @@ export default function Events() {
                     start: "top 80%"
                 }
             });
-
+            gsap.from(".events-carousel-container", {
+                opacity: 0,
+                y: 60,
+                duration: 0.9,
+                ease: "power3.out",
+                scrollTrigger: {
+                    trigger: ".events-carousel-container",
+                    start: "top 80%"
+                }
+            });
         }, sectionRef);
 
         return () => ctx.revert();
     }, []);
 
-    useEffect(() => {
-        // Preload para evitar tranco ao trocar slides.
-        EVENTS.forEach((event) => {
-            const img = new Image();
-            img.src = event.image;
-        });
+    const nextSlide = useCallback(() => {
+        setEventsList(prev => [...prev.slice(1), prev[0]]);
     }, []);
 
-    const orderedEvents = useMemo(
-        () => [...EVENTS.slice(activeIndex), ...EVENTS.slice(0, activeIndex)],
-        [activeIndex]
-    );
-    const currentEvent = orderedEvents[0];
-    const previewEvents = orderedEvents.slice(1, 3);
+    const prevSlide = useCallback(() => {
+        setEventsList(prev => [prev[prev.length - 1], ...prev.slice(0, prev.length - 1)]);
+    }, []);
 
-    const animateNext = useCallback(() => {
-        if (isAnimating || !carouselRef.current || !transitionRef.current || !overlayRef.current || !contentRef.current) return;
-        const nextIndex = (activeIndex + 1) % EVENTS.length;
-        const nextEvent = EVENTS[nextIndex];
-        const rect = carouselRef.current.getBoundingClientRect();
-        const pw = Math.min(220, rect.width * 0.24);
-        const ph = Math.min(300, rect.height * 0.54);
-        const startX = rect.width - (pw * 2 + 28);
-        const startY = (rect.height - ph) / 2;
-
-        const layer = transitionRef.current;
-        const layerOverlay = layer.querySelector(".transition-overlay") as HTMLElement;
-        const img = layer.querySelector("img") as HTMLImageElement;
-        if (!img) return;
-
-        setIsAnimating(true);
-
-        const tl = gsap.timeline({
-            onComplete: () => {
-                gsap.set(layer, { display: "none", clearProps: "all" });
-                if (layerOverlay) gsap.set(layerOverlay, { clearProps: "all" });
-                gsap.set(overlayRef.current!, { opacity: 1 });
-                gsap.set(contentRef.current!, { opacity: 1, y: 0 });
-                setIsAnimating(false);
-            },
-        });
-
-        img.src = nextEvent.image;
-        img.alt = nextEvent.title;
-
-        tl.to(contentRef.current, { opacity: 0, y: -18, duration: 0.22, ease: "power2.in" })
-
-          .set(layer, {
-              display: "block",
-              opacity: 1,
-              x: startX,
-              y: startY,
-              width: pw,
-              height: ph,
-              borderRadius: 24,
-          })
-          .set(layerOverlay, { opacity: 0 })
-
-          .to(layer, {
-              x: 0,
-              y: 0,
-              width: rect.width,
-              height: rect.height,
-              borderRadius: 26,
-              duration: 0.62,
-              ease: "power3.inOut",
-          })
-
-          .to(layerOverlay, {
-              opacity: 1,
-              duration: 0.28,
-              ease: "power2.out",
-          }, "-=0.14")
-
-          .call(() => {
-              setActiveIndex(nextIndex);
-          })
-
-          .fromTo(contentRef.current,
-              { opacity: 0, y: 28 },
-              { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" }
-          );
-    }, [activeIndex, isAnimating]);
-
-    const animatePrev = useCallback(() => {
-        if (isAnimating || !carouselRef.current || !transitionRef.current || !overlayRef.current || !contentRef.current) return;
-        const prevIndex = (activeIndex - 1 + EVENTS.length) % EVENTS.length;
-        const current = EVENTS[activeIndex];
-        const rect = carouselRef.current.getBoundingClientRect();
-        const pw = Math.min(220, rect.width * 0.24);
-        const ph = Math.min(300, rect.height * 0.54);
-        const targetX = rect.width - (pw * 2 + 28);
-        const targetY = (rect.height - ph) / 2;
-
-        const layer = transitionRef.current;
-        const layerOverlay = layer.querySelector(".transition-overlay") as HTMLElement;
-        const img = layer.querySelector("img") as HTMLImageElement;
-        if (!img) return;
-
-        setIsAnimating(true);
-        img.src = current.image;
-        img.alt = current.title;
-
-        const tl = gsap.timeline({
-            onComplete: () => {
-                gsap.set(layer, { display: "none", clearProps: "all" });
-                if (layerOverlay) gsap.set(layerOverlay, { clearProps: "all" });
-                setIsAnimating(false);
-            },
-        });
-
-        tl.to(contentRef.current, { opacity: 0, y: -18, duration: 0.22, ease: "power2.in" })
-
-          .call(() => setActiveIndex(prevIndex))
-
-          .set(layer, {
-              display: "block",
-              opacity: 1,
-              x: 0,
-              y: 0,
-              width: rect.width,
-              height: rect.height,
-              borderRadius: 26,
-          })
-          .set(layerOverlay, { opacity: 1 })
-
-          .to(layerOverlay, { opacity: 0, duration: 0.3, ease: "power2.in" })
-          .to(layer, {
-              x: targetX,
-              y: targetY,
-              width: pw,
-              height: ph,
-              borderRadius: 24,
-              opacity: 0,
-              duration: 0.65,
-              ease: "power3.inOut",
-          }, "-=0.15")
-
-          .fromTo(contentRef.current,
-              { opacity: 0, y: 28 },
-              { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" },
-              "-=0.25"
-          );
-    }, [activeIndex, isAnimating]);
-
+    // Auto play (optional, based on previous logic)
     useEffect(() => {
         const interval = window.setInterval(() => {
-            animateNext();
+            nextSlide();
         }, 5500);
-
         return () => window.clearInterval(interval);
-    }, [animateNext]);
+    }, [nextSlide]);
 
     return (
-        <section ref={sectionRef} className="events-section bg-[#F1F1F1] py-20 lg:py-32">
+        <section id="eventos" ref={sectionRef} className="events-section bg-[#F1F1F1] py-20 lg:py-32 overflow-hidden">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
                 <div className="events-header text-center mb-16 lg:mb-20">
                     <h2 className="text-display-lg text-[#0D0D0D] mb-4">NOSSOS EVENTOS</h2>
@@ -261,76 +118,52 @@ export default function Events() {
                     </p>
                 </div>
 
-                <div ref={carouselRef} className="events-carousel relative h-[460px] md:h-[520px] rounded-[26px] overflow-hidden shadow-[0_30px_55px_rgba(0,0,0,0.2)]">
-                    <img
-                        src={currentEvent.image}
-                        alt={currentEvent.title}
-                        className="absolute inset-0 w-full h-full object-cover scale-[1.05]"
-                    />
-                    <div ref={overlayRef} className="absolute inset-0 bg-[radial-gradient(circle_at_60%_55%,rgba(120,170,255,0.2),transparent_35%),linear-gradient(90deg,rgba(6,10,12,0.9)_0%,rgba(8,12,16,0.76)_45%,rgba(8,12,16,0.48)_70%,rgba(8,12,16,0.7)_100%)]" />
-
-                    <div className="absolute inset-0 z-10 grid grid-cols-1 md:grid-cols-[1fr_auto] items-center px-8 md:px-14">
-                        <div ref={contentRef} className="max-w-[460px]">
-                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/25 rounded-full text-[11px] font-semibold tracking-[0.2em] text-white uppercase mb-5">
-                                <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
-                                {currentEvent.badge}
-                            </span>
-                            <h3 className="text-[44px] leading-[0.98] font-display font-semibold text-white mb-3 uppercase">
-                                {currentEvent.category}
-                            </h3>
-                            <p className="text-[33px] md:text-[30px] leading-[1.25] text-white/86 mb-6">
-                                {currentEvent.description}
-                            </p>
-                            <a
-                                href="#"
-                                className="inline-flex items-center gap-2 px-7 py-3 rounded-[12px] bg-white/80 hover:bg-white text-[#0F1114] text-[28px] font-semibold transition-all"
-                            >
-                                {currentEvent.cta}
-                            </a>
-                        </div>
-
-                        <div className="hidden md:flex items-center gap-4 lg:gap-6 pr-2">
-                            {previewEvents.map((event) => (
+                <div className="events-carousel-container relative w-full h-[460px] md:h-[520px] rounded-[26px] bg-[#0D0D0D] shadow-[0_30px_55px_rgba(0,0,0,0.2)]">
+                    <div className="absolute inset-0 overflow-hidden rounded-[26px]">
+                        <div id="slide" className="w-full h-full relative">
+                            {eventsList.map((event) => (
                                 <div
-                                    key={`preview-${event.id}`}
-                                    className="relative w-[200px] h-[280px] rounded-[24px] overflow-hidden border border-white/20 shadow-[0_18px_40px_rgba(0,0,0,0.4)]"
+                                    key={event.id}
+                                    className="item absolute bg-cover bg-center shadow-[0_18px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out"
+                                    style={{ backgroundImage: `url('${event.image}')` }}
                                 >
-                                    <img
-                                        src={event.image}
-                                        alt={event.title}
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+                                    {/* The overlay is only really needed (or visible) for the background item(s) */}
+                                    <div className="item-overlay absolute inset-0 bg-[radial-gradient(circle_at_60%_55%,rgba(120,170,255,0.2),transparent_35%),linear-gradient(90deg,rgba(6,10,12,0.9)_0%,rgba(8,12,16,0.76)_45%,rgba(8,12,16,0.48)_70%,rgba(8,12,16,0.7)_100%)] opacity-0 transition-opacity duration-500 pointer-events-none" />
+
+                                    <div className="content absolute top-1/2 left-8 md:left-14 -translate-y-1/2 max-w-[460px] hidden text-white z-20">
+                                        <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/25 rounded-full text-[11px] font-semibold tracking-[0.2em] text-white uppercase mb-4 md:mb-5 badge">
+                                            <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
+                                            {event.badge}
+                                        </span>
+                                        <h3 className="text-[32px] md:text-[44px] leading-[0.98] font-display font-semibold text-white mb-2 md:mb-3 uppercase category">
+                                            {event.category}
+                                        </h3>
+                                        <p className="text-[20px] md:text-[30px] leading-[1.25] text-white/86 mb-4 md:mb-6 description">
+                                            {event.description}
+                                        </p>
+                                        <a
+                                            href="#"
+                                            className="inline-flex items-center gap-2 px-5 py-2.5 md:px-7 md:py-3 rounded-[12px] bg-white/80 hover:bg-white text-[#0F1114] text-[20px] md:text-[28px] font-semibold transition-all cta-btn"
+                                        >
+                                            {event.cta}
+                                        </a>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    <div
-                        ref={transitionRef}
-                        className="absolute top-0 left-0 z-30 hidden overflow-hidden border border-white/30 shadow-[0_20px_45px_rgba(0,0,0,0.35)] pointer-events-none"
-                    >
-                        <img
-                            src={currentEvent.image}
-                            alt={currentEvent.title}
-                            className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        <div className="transition-overlay absolute inset-0 bg-[linear-gradient(90deg,rgba(6,10,12,0.9)_0%,rgba(8,12,16,0.76)_45%,rgba(8,12,16,0.48)_70%,rgba(8,12,16,0.7)_100%)]" />
-                    </div>
-
-                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
                         <button
-                            onClick={animatePrev}
-                            disabled={isAnimating}
-                            className="w-10 h-10 rounded-[10px] border-2 border-black/50 bg-white/65 hover:bg-white transition-all flex items-center justify-center"
+                            onClick={prevSlide}
+                            className="w-10 h-10 rounded-[10px] border-2 border-black/50 bg-white/65 hover:bg-white transition-all flex items-center justify-center pointer-events-auto"
                             aria-label="Evento anterior"
                         >
                             <ArrowLeft className="w-4 h-4 text-black" />
                         </button>
                         <button
-                            onClick={animateNext}
-                            disabled={isAnimating}
-                            className="w-10 h-10 rounded-[10px] border-2 border-black/50 bg-white/65 hover:bg-white transition-all flex items-center justify-center"
+                            onClick={nextSlide}
+                            className="w-10 h-10 rounded-[10px] border-2 border-black/50 bg-white/65 hover:bg-white transition-all flex items-center justify-center pointer-events-auto"
                             aria-label="Próximo evento"
                         >
                             <ArrowRight className="w-4 h-4 text-black" />
@@ -338,16 +171,104 @@ export default function Events() {
                     </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-center gap-2">
-                    {EVENTS.map((event, idx) => (
-                        <button
-                            key={event.id}
-                            onClick={() => setActiveIndex(idx)}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? "w-8 bg-[#0D0D0D]" : "w-4 bg-[#0D0D0D]/30 hover:bg-[#0D0D0D]/50"}`}
-                            aria-label={`Ir para evento ${event.title}`}
-                        />
-                    ))}
-                </div>
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    #slide .item {
+                        top: 50%;
+                        transform: translateY(-50%);
+                        width: 200px;
+                        height: 280px;
+                        border-radius: 24px;
+                    }
+                    #slide .item:nth-child(1),
+                    #slide .item:nth-child(2) {
+                        top: 0;
+                        left: 0;
+                        transform: translate(0, 0);
+                        border-radius: 0;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    /* Item 2 is the active background */
+                    #slide .item:nth-child(2) .item-overlay {
+                        opacity: 1;
+                    }
+                    #slide .item:nth-child(2) .content {
+                        display: block;
+                    }
+
+                    /* Desktop positioning for cards */
+                    @media (min-width: 1025px) {
+                        #slide .item:nth-child(3) {
+                            left: 60%;
+                        }
+                        #slide .item:nth-child(4) {
+                            left: calc(60% + 220px);
+                        }
+                        #slide .item:nth-child(5) {
+                            left: calc(60% + 440px);
+                        }
+                        #slide .item:nth-child(n + 6) {
+                            left: calc(60% + 660px);
+                            opacity: 0;
+                        }
+                    }
+
+                    /* Tablet positioning */
+                    @media (max-width: 1024px) and (min-width: 768px) {
+                        #slide .item:nth-child(3) { left: 55%; }
+                        #slide .item:nth-child(4) { left: calc(55% + 220px); }
+                        #slide .item:nth-child(5) { left: calc(55% + 440px); }
+                        #slide .item:nth-child(n + 6) { left: calc(55% + 660px); opacity: 0; }
+                    }
+
+                    /* Mobile positioning */
+                    @media (max-width: 767px) {
+                        #slide .item {
+                            width: 130px;
+                            height: 180px;
+                        }
+                        #slide .item:nth-child(3) { left: 10%; top: calc(100% - 130px); transform: translate(0, -50%); z-index: 10; }
+                        #slide .item:nth-child(4) { left: calc(10% + 140px); top: calc(100% - 130px); transform: translate(0, -50%); z-index: 10; }
+                        #slide .item:nth-child(5) { left: calc(10% + 280px); top: calc(100% - 130px); transform: translate(0, -50%); z-index: 10; }
+                        #slide .item:nth-child(n + 6) { left: calc(10% + 420px); top: calc(100% - 130px); transform: translate(0, -50%); opacity: 0; z-index: 10; }
+                        
+                        .events-carousel-container #slide .content {
+                            top: 35%;
+                        }
+                    }
+
+                    /* Animations for content elements inside the active item */
+                    .content .badge {
+                        opacity: 0;
+                        animation: animateText 0.8s ease-in-out 1 forwards;
+                    }
+                    .content .category {
+                        opacity: 0;
+                        animation: animateText 0.8s ease-in-out 0.2s 1 forwards;
+                    }
+                    .content .description {
+                        opacity: 0;
+                        animation: animateText 0.8s ease-in-out 0.4s 1 forwards;
+                    }
+                    .content .cta-btn {
+                        opacity: 0;
+                        animation: animateText 0.8s ease-in-out 0.6s 1 forwards;
+                    }
+
+                    @keyframes animateText {
+                        from {
+                            opacity: 0;
+                            transform: translate(0, 40px);
+                            filter: blur(5px);
+                        }
+                        to {
+                            opacity: 1;
+                            transform: translate(0, 0);
+                            filter: blur(0);
+                        }
+                    }
+                ` }} />
             </div>
         </section>
     );
