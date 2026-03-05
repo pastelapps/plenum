@@ -172,27 +172,22 @@ export default function Academy() {
                                         className="absolute bottom-0 left-0 right-0 p-6 z-10 transition-opacity duration-300"
                                         style={{ opacity: isCurrent ? 1 : absR <= 1 ? 0.3 : 0 }}
                                     >
-                                        <p className="text-[10px] text-white/45 uppercase tracking-widest font-medium mb-1.5">
-                                            {course.category}
-                                        </p>
-                                        <h3 className="text-lg lg:text-xl font-display font-medium text-white mb-3 leading-tight">
-                                            {course.title}
-                                        </h3>
-                                        <div className="flex flex-col gap-1 mb-4">
-                                            <span className="inline-flex items-center gap-1.5 text-[12px] text-white/70">
-                                                <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
-                                                14 e 15 de maio
-                                            </span>
-                                            <span className="inline-flex items-center gap-1.5 text-[12px] text-white/70">
-                                                <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
-                                                Brasília | DF
-                                            </span>
-                                        </div>
-
                                         {isCurrent && (
-                                            <a href={course.id === 1 ? "https://modelolpcursoplenum.vercel.app/" : "#"} className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
-                                                Ver Curso <ArrowRight className="w-3 h-3" />
-                                            </a>
+                                            <div className="flex items-center gap-4 flex-wrap">
+                                                <a href={course.id === 1 ? "https://modelolpcursoplenum.vercel.app/" : "#"} className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
+                                                    Ver Curso <ArrowRight className="w-3 h-3" />
+                                                </a>
+                                                <div className="flex items-center gap-3">
+                                                    <span className="inline-flex items-center gap-1.5 text-[11px] text-white/60">
+                                                        <Calendar className="w-3 h-3 text-[#C9A227]" />
+                                                        14 e 15 de maio
+                                                    </span>
+                                                    <span className="inline-flex items-center gap-1.5 text-[11px] text-white/60">
+                                                        <MapPin className="w-3 h-3 text-[#C9A227]" />
+                                                        Brasília | DF
+                                                    </span>
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
