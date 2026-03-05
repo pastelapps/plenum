@@ -168,7 +168,7 @@ const InverseContainerScroll = ({
       <section
         id={id}
         ref={scrollRef}
-        className={cn("relative h-[270vh] bg-[#030d1f]", className)}
+        className={cn("relative h-[270vh] bg-[var(--ds-background-deep)]", className)}
         {...props}
       >
         <div className="sticky top-0 h-screen overflow-hidden">
