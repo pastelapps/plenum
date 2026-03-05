@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, MapPin } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 
 const CATEGORIES = ["Todos", "Gestão", "Licitações", "Legislativo", "Governança", "IA Pública"];
@@ -10,14 +10,16 @@ const COURSES = [
         id: 1,
         title: "Relacionamento Governamental e Captação de Recursos",
         category: "GESTÃO",
+        badge: "IMERSÃO",
         professor: "Daniel Angotti",
         professorImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&auto=format&fit=crop",
-        image: "/capacursoteste.png",
+        image: "/fotocursoteste.jpg",
     },
     {
         id: 2,
         title: "Nova Lei de Licitações PRO",
         category: "LICITAÇÕES",
+        badge: "SEMINÁRIO",
         students: "+350",
         image: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=2070&auto=format&fit=crop",
     },
@@ -25,6 +27,7 @@ const COURSES = [
         id: 3,
         title: "Governança Corporativa",
         category: "GOVERNANÇA",
+        badge: "GESTÃO",
         students: "+200",
         image: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2070&auto=format&fit=crop",
     },
@@ -32,6 +35,7 @@ const COURSES = [
         id: 4,
         title: "IA Aplicada ao Setor Público",
         category: "IA PÚBLICA",
+        badge: "IMERSÃO",
         students: "+280",
         image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop",
     },
@@ -39,6 +43,7 @@ const COURSES = [
         id: 5,
         title: "Liderança em Organizações Públicas",
         category: "GESTÃO",
+        badge: "SEMINÁRIO",
         students: "+500",
         image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
     },
@@ -154,11 +159,11 @@ export default function Academy() {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
 
-                                    {/* Badge */}
+                                    {/* Badge - shows course type (Imersão, Seminário, Gestão...) */}
                                     <div className="absolute top-5 left-5 z-10">
                                         <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-semibold tracking-widest text-white uppercase">
                                             <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-                                            PLENUM
+                                            {course.badge}
                                         </span>
                                     </div>
 
@@ -167,30 +172,22 @@ export default function Academy() {
                                         className="absolute bottom-0 left-0 right-0 p-6 z-10 transition-opacity duration-300"
                                         style={{ opacity: isCurrent ? 1 : absR <= 1 ? 0.3 : 0 }}
                                     >
-                                        <div className="flex items-center mb-3">
-                                            {course.professor ? (
-                                                <>
-                                                    <img src={course.professorImage} alt={course.professor} className="w-7 h-7 rounded-full object-cover border-2 border-white/30" />
-                                                    <span className="ml-2 text-[11px] text-white/70 font-medium">{course.professor}</span>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <div className="flex -space-x-2">
-                                                        {[1, 2, 3].map(j => (
-                                                            <div key={j} className="w-6 h-6 rounded-full bg-white/20 backdrop-blur border-2 border-white/30" />
-                                                        ))}
-                                                    </div>
-                                                    <span className="ml-2 text-[11px] text-white/70 font-medium">{course.students}</span>
-                                                </>
-                                            )}
-                                        </div>
-
-                                        <p className="text-[10px] text-white/60 uppercase tracking-widest font-semibold mb-1.5">
+                                        <p className="text-[10px] text-white/45 uppercase tracking-widest font-medium mb-1.5">
                                             {course.category}
                                         </p>
-                                        <h3 className="text-lg lg:text-xl font-display font-medium text-white mb-4 leading-tight">
+                                        <h3 className="text-lg lg:text-xl font-display font-medium text-white mb-3 leading-tight">
                                             {course.title}
                                         </h3>
+                                        <div className="flex flex-col gap-1 mb-4">
+                                            <span className="inline-flex items-center gap-1.5 text-[12px] text-white/70">
+                                                <Calendar className="w-3.5 h-3.5 text-[#C9A227]" />
+                                                14 e 15 de maio
+                                            </span>
+                                            <span className="inline-flex items-center gap-1.5 text-[12px] text-white/70">
+                                                <MapPin className="w-3.5 h-3.5 text-[#C9A227]" />
+                                                Brasília | DF
+                                            </span>
+                                        </div>
 
                                         {isCurrent && (
                                             <a href={course.id === 1 ? "https://modelolpcursoplenum.vercel.app/" : "#"} className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
