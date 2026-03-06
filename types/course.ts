@@ -191,7 +191,7 @@ export interface LocationExtra {
 export interface CourseDate {
   id: string;
   course_id: string;
-  instructor_id: string;
+  instructor_ids: string[];
   start_date: string;
   end_date: string;
   label: string | null;
@@ -209,9 +209,9 @@ export interface CourseDate {
 export type CourseDateInsert = Omit<CourseDate, 'id' | 'created_at'>;
 export type CourseDateUpdate = Partial<Omit<CourseDate, 'id' | 'created_at'>>;
 
-// --- Course Date with Instructor (JOIN result) ---
+// --- Course Date with Instructors (JOIN result) ---
 export interface CourseDateWithInstructor extends CourseDate {
-  instructor: Instructor;
+  instructors: Instructor[];
 }
 
 // --- Full Course (with all relations) ---

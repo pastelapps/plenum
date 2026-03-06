@@ -1,19 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Save, ExternalLink } from 'lucide-react';
 import { createCourse, updateCourse, revalidateCoursePage } from '@/lib/actions/courses';
-import type { Course, CourseDate } from '@/types/course';
+import type { Course } from '@/types/course';
 
 import TabGeral from './course-tabs/TabGeral';
 import TabHero from './course-tabs/TabHero';
 import TabSobre from './course-tabs/TabSobre';
 import TabPublico from './course-tabs/TabPublico';
-import TabProgramacao from './course-tabs/TabProgramacao';
 import TabInvestimento from './course-tabs/TabInvestimento';
 import TabDepoimentos from './course-tabs/TabDepoimentos';
 import TabMidias from './course-tabs/TabMidias';
@@ -21,22 +20,17 @@ import TabSeo from './course-tabs/TabSeo';
 
 interface Props {
   course?: Course;
-  courseDates?: CourseDate[];
   designSystems: Array<{ id: string; name: string; is_default: boolean }>;
-  instructors: Array<{
-    id: string;
-    name: string;
-    role: string | null;
-    bio: string | null;
-    photo_url: string | null;
-    social_links: Array<{ platform: string; url: string; handle: string }>;
-    status: string;
-  }>;
 }
 
-export default function CourseForm({ course, courseDates = [], designSystems, instructors }: Props) {
+export default function CourseForm({ course, designSystems }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const isEditing = !!course;
+
+  // Read tab from URL params
+  const urlTab = searchParams.get('tab') || 'geral';
+  const [activeTab, setActiveTab] = useState(urlTab);
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -68,10 +62,6 @@ export default function CourseForm({ course, courseDates = [], designSystems, in
   // Público-Alvo
   const [audienceCards, setAudienceCards] = useState(course?.audience_cards || []);
   const [audienceImages, setAudienceImages] = useState(course?.audience_images || []);
-
-  // Programação (labels only at course level)
-  const [programHeading, setProgramHeading] = useState(course?.program_heading || 'Programação');
-  const [programDescription, setProgramDescription] = useState(course?.program_description || '');
 
   // Investimento
   const [investmentHeading, setInvestmentHeading] = useState(course?.investment_heading || '');
@@ -119,8 +109,6 @@ export default function CourseForm({ course, courseDates = [], designSystems, in
       about_cards: aboutCards,
       audience_cards: audienceCards,
       audience_images: audienceImages,
-      program_heading: programHeading || null,
-      program_description: programDescription || null,
       investment_heading: investmentHeading || null,
       investment_subtitle: investmentSubtitle || null,
       included_items: includedItems,
@@ -171,14 +159,13 @@ export default function CourseForm({ course, courseDates = [], designSystems, in
         </Alert>
       )}
 
-      <Tabs defaultValue="geral" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="flex items-center justify-between mb-4">
           <TabsList className="flex-wrap h-auto gap-1">
             <TabsTrigger value="geral">Geral</TabsTrigger>
             <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="sobre">Sobre</TabsTrigger>
             <TabsTrigger value="publico">Público</TabsTrigger>
-            <TabsTrigger value="programacao">Programação</TabsTrigger>
             <TabsTrigger value="investimento">Investimento</TabsTrigger>
             <TabsTrigger value="depoimentos">Depoimentos</TabsTrigger>
             <TabsTrigger value="midias">Mídias</TabsTrigger>
@@ -240,16 +227,6 @@ export default function CourseForm({ course, courseDates = [], designSystems, in
           />
         </TabsContent>
 
-        <TabsContent value="programacao">
-          <TabProgramacao
-            programHeading={programHeading} setProgramHeading={setProgramHeading}
-            programDescription={programDescription} setProgramDescription={setProgramDescription}
-            courseId={course?.id}
-            instructors={instructors}
-            courseDates={courseDates}
-          />
-        </TabsContent>
-
         <TabsContent value="investimento">
           <TabInvestimento
             investmentHeading={investmentHeading} setInvestmentHeading={setInvestmentHeading}
@@ -274,6 +251,7 @@ export default function CourseForm({ course, courseDates = [], designSystems, in
             coverImageUrl={coverImageUrl} setCoverImageUrl={setCoverImageUrl}
             folderBgUrl={folderBgUrl} setFolderBgUrl={setFolderBgUrl}
             courseSlug={slug}
+            courseId={course?.id}
           />
         </TabsContent>
 
