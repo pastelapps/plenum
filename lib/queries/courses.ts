@@ -110,6 +110,70 @@ export async function getAllCourses(): Promise<Course[]> {
 }
 
 /**
+ * Get all courses with their course_dates count + status summary.
+ * Used by the admin dashboard for the expandable turma view.
+ */
+export async function getAllCoursesWithDates(): Promise<CourseWithDatesPreview[]> {
+  const supabase = await createClient();
+
+  // 1. Fetch all courses
+  const { data: courses, error: coursesError } = await supabase
+    .from('courses')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  if (coursesError || !courses) {
+    console.error('Error fetching courses with dates:', coursesError);
+    return [];
+  }
+
+  // 2. Fetch all course_dates with instructor name
+  const { data: allDates } = await supabase
+    .from('course_dates')
+    .select('*, instructor:instructors(id, name)')
+    .order('sort_order', { ascending: true })
+    .order('start_date', { ascending: true });
+
+  const datesMap = new Map<string, CourseDatePreview[]>();
+  for (const d of (allDates || [])) {
+    const courseId = d.course_id as string;
+    if (!datesMap.has(courseId)) datesMap.set(courseId, []);
+    datesMap.get(courseId)!.push({
+      id: d.id as string,
+      label: (d.label as string) || '',
+      start_date: d.start_date as string,
+      end_date: d.end_date as string,
+      status: d.status as string,
+      location_venue: (d.location_venue as string) || '',
+      instructor_name: (d.instructor as any)?.name || 'Sem instrutor',
+      max_students: d.max_students as number | null,
+    });
+  }
+
+  return (courses as unknown as Course[]).map((course) => ({
+    ...course,
+    dates_preview: datesMap.get(course.id) || [],
+  }));
+}
+
+/** Lightweight turma preview for dashboard */
+export interface CourseDatePreview {
+  id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  location_venue: string;
+  instructor_name: string;
+  max_students: number | null;
+}
+
+/** Course with lightweight dates for dashboard */
+export interface CourseWithDatesPreview extends Course {
+  dates_preview: CourseDatePreview[];
+}
+
+/**
  * Get a single course by ID (for admin editing).
  */
 export async function getCourseById(id: string): Promise<Course | null> {

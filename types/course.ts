@@ -201,7 +201,7 @@ export interface CourseDate {
   location_extra: LocationExtra[];
   program_days: ProgramDay[];
   max_students: number | null;
-  status: 'open' | 'closed' | 'cancelled';
+  status: 'open' | 'closed' | 'cancelled' | 'paused';
   sort_order: number;
   created_at: string;
 }

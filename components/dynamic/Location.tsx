@@ -1,16 +1,12 @@
 'use client';
 
 import { MapPin, Phone, Building2 } from 'lucide-react';
-import type { LocationExtra } from '@/types/course';
 import type { PhoneEntry } from '@/types/company';
 import { getIcon } from '@/lib/icon-map';
+import { useTurma } from '@/hooks/use-turma';
 
 // ─── Props ─────────────────────────────────────────────
 export interface LocationProps {
-  venue: string;
-  address: string;
-  mapEmbed: string;
-  locationExtra?: LocationExtra[];
   phones?: PhoneEntry[];
   heading?: string;
   description?: string;
@@ -18,14 +14,15 @@ export interface LocationProps {
 
 // ─── Component ────────────────────────────────────────
 export default function Location({
-  venue,
-  address,
-  mapEmbed,
-  locationExtra = [],
   phones = [],
   heading = 'Onde vai ser',
   description = 'Um espaço de excelência preparado para receber os maiores especialistas do país com conforto e acessibilidade.',
 }: LocationProps) {
+  const { locationVenue, locationAddress, locationMapEmbed, locationExtra } = useTurma();
+
+  // Don't render if no location data
+  if (!locationVenue || !locationMapEmbed) return null;
+
   return (
     <section id="local" className="py-20 md:py-28 px-6 md:px-12 bg-[var(--ds-background-deep)] relative overflow-hidden">
       <div className="max-w-[1100px] mx-auto">
@@ -53,9 +50,9 @@ export default function Location({
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-white mb-1">{venue}</h3>
+                  <h3 className="font-bold text-lg text-white mb-1">{locationVenue}</h3>
                   <p className="text-white/45 leading-relaxed text-sm">
-                    {address.split('\n').map((line, i, arr) => (
+                    {locationAddress.split('\n').map((line, i, arr) => (
                       <span key={i}>
                         {line}
                         {i < arr.length - 1 && <br />}
@@ -110,7 +107,8 @@ export default function Location({
           {/* Map — Right */}
           <div className="lg:w-1/2 h-[380px] lg:h-[480px] w-full rounded-3xl overflow-hidden relative border border-white/[0.08] shadow-[0_0_60px_rgba(0,0,0,0.5)] order-1 lg:order-2">
             <iframe
-              src={mapEmbed}
+              key={locationMapEmbed}
+              src={locationMapEmbed}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -121,7 +119,7 @@ export default function Location({
             <div className="absolute inset-0 bg-gradient-to-t from-[var(--ds-background)]/60 via-transparent to-transparent pointer-events-none" style={{ background: 'linear-gradient(to top, color-mix(in srgb, var(--ds-background) 60%, transparent), transparent)' }} />
             <div className="absolute bottom-6 left-6 z-20 pointer-events-none">
               <div className="bg-white/[0.08] backdrop-blur-xl px-4 py-3 rounded-2xl border border-white/[0.15]">
-                <p className="text-white font-bold text-sm">{venue}</p>
+                <p className="text-white font-bold text-sm">{locationVenue}</p>
               </div>
             </div>
           </div>

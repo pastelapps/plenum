@@ -4,13 +4,12 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Instagram, Linkedin, Twitter, Globe } from 'lucide-react';
-import type { Instructor } from '@/types/course';
+import { useTurma } from '@/hooks/use-turma';
 
 gsap.registerPlugin(ScrollTrigger);
 
 // ─── Props ─────────────────────────────────────────────
 export interface TeachersProps {
-  instructor: Instructor;
   heading?: string;
 }
 
@@ -27,9 +26,33 @@ function getSocialIcon(platform: string) {
 
 // ─── Component ────────────────────────────────────────
 export default function Teachers({
-  instructor,
   heading = 'Quem será\no instrutor?',
 }: TeachersProps) {
+  const { instructor } = useTurma();
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Don't render if no instructor
+  if (!instructor) return null;
+
+  const headingLines = heading.split('\n');
+
+  return (
+    <TeachersInner
+      key={instructor.id}
+      instructor={instructor}
+      headingLines={headingLines}
+    />
+  );
+}
+
+// ─── Inner component (keyed by instructor.id for GSAP remount) ──
+function TeachersInner({
+  instructor,
+  headingLines,
+}: {
+  instructor: NonNullable<ReturnType<typeof useTurma>['instructor']>;
+  headingLines: string[];
+}) {
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -50,8 +73,6 @@ export default function Teachers({
     }, sectionRef);
     return () => ctx.revert();
   }, []);
-
-  const headingLines = heading.split('\n');
 
   return (
     <section
@@ -78,9 +99,7 @@ export default function Teachers({
 
         {/* ── Mobile Card — foto vazada + glass card ── */}
         <div className="speaker-anim relative md:hidden max-w-[340px] mx-auto">
-          {/* Wrapper com espaço para a foto vazada no topo */}
           <div className={`relative ${instructor.photo_url ? 'pt-[160px]' : ''}`}>
-            {/* Foto vazada — sobrepõe o topo do card */}
             {instructor.photo_url && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 w-[70%] max-w-[260px]">
                 <div className="relative">
@@ -89,20 +108,14 @@ export default function Teachers({
                     alt={instructor.name}
                     className="w-full aspect-[3/4] object-cover object-top"
                   />
-                  {/* Degradê na parte de baixo da foto */}
                   <div className="absolute inset-x-0 bottom-0 h-[40%] pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, var(--ds-background))' }} />
                 </div>
               </div>
             )}
 
-            {/* Glass card */}
             <div className="relative rounded-3xl border border-white/[0.1] bg-white/[0.04] backdrop-blur-md overflow-hidden">
               <div className="absolute -inset-2 rounded-3xl blur-2xl -z-10" style={{ backgroundColor: 'var(--ds-primary-4)' }} />
-
-              {/* Spacer para a parte da foto que fica dentro do card */}
               {instructor.photo_url && <div className="h-[180px]" />}
-
-              {/* Name + role + bio + social — left-aligned */}
               <div className="px-6 pb-7 pt-4 text-left">
                 <h3 className="font-[var(--font-bricolage)] text-[28px] font-bold text-white leading-tight mb-1.5">
                   {instructor.name}
@@ -140,7 +153,6 @@ export default function Teachers({
           <div className="relative rounded-3xl border border-white/[0.1] bg-white/[0.04] backdrop-blur-md overflow-visible">
             <div className="absolute -inset-2 rounded-3xl blur-2xl -z-10" style={{ backgroundColor: 'var(--ds-primary-4)' }} />
 
-            {/* Text content */}
             <div className="p-12 pr-[300px] text-left">
               <h3 className="font-[var(--font-bricolage)] text-3xl font-bold text-white mb-2">
                 {instructor.name}
@@ -152,7 +164,6 @@ export default function Teachers({
                 {instructor.bio || ''}
               </p>
 
-              {/* Social links */}
               <div className="flex gap-3 flex-wrap">
                 {instructor.social_links?.map((social) => {
                   const SocialIcon = getSocialIcon(social.platform);
@@ -174,7 +185,6 @@ export default function Teachers({
               </div>
             </div>
 
-            {/* Photo — desktop */}
             {instructor.photo_url && (
               <div className="absolute bottom-0 right-0 z-10">
                 <div

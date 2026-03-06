@@ -4,8 +4,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowRight, ChevronDown, Download } from 'lucide-react';
-import type { TitlePart, HeroBadge } from '@/types/course';
+import type { TitlePart } from '@/types/course';
 import { getIcon } from '@/lib/icon-map';
+import { useTurma } from '@/hooks/use-turma';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,8 +16,6 @@ export interface HeroProps {
   subtitle?: string | null;
   categoryLabel?: string | null;
   titleParts?: TitlePart[] | null;
-  turmas: string[];
-  heroBadges: HeroBadge[];
   framesPath?: string | null;
   frameCount?: number | null;
   frameExt?: string | null;
@@ -31,8 +30,6 @@ export default function Hero({
   subtitle,
   categoryLabel = 'Imersão',
   titleParts,
-  turmas,
-  heroBadges,
   framesPath = '/frames/frame_',
   frameCount = 192,
   frameExt = '.jpg',
@@ -44,7 +41,9 @@ export default function Hero({
   const framesRef = useRef<HTMLImageElement[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [turmaOpen, setTurmaOpen] = useState(false);
-  const [selectedTurma, setSelectedTurma] = useState(0);
+
+  // ── Turma context (replaces local state) ──
+  const { turmaLabels, heroBadges, selectedIndex, setSelectedIndex } = useTurma();
 
   const actualFrameCount = frameCount || 192;
   const actualFramesPath = framesPath || '/frames/frame_';
@@ -136,9 +135,6 @@ export default function Hero({
     return <span className="text-white">{title}</span>;
   };
 
-  // Find which badge is the turma selector (value === "dropdown")
-  const turmaBadge = heroBadges.find(b => b.value === 'dropdown');
-
   return (
     <section
       ref={sectionRef}
@@ -209,23 +205,23 @@ export default function Hero({
                     </div>
                     <div className={isTurmaDropdown ? 'relative' : ''}>
                       <p className="text-[var(--ds-primary)] text-[11px] font-semibold uppercase tracking-wider mb-1">{badge.label}</p>
-                      {isTurmaDropdown && turmas.length > 0 ? (
+                      {isTurmaDropdown && turmaLabels.length > 0 ? (
                         <>
                           <button
                             onClick={() => setTurmaOpen(!turmaOpen)}
                             className="flex items-center gap-1 text-white font-bold text-sm hover:text-white/80 transition-colors cursor-pointer"
                           >
-                            <span>{turmas[selectedTurma]}</span>
+                            <span>{turmaLabels[selectedIndex]}</span>
                             <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${turmaOpen ? 'rotate-180' : ''}`} />
                           </button>
                           {turmaOpen && (
                             <div className="absolute top-full left-0 mt-2 min-w-[220px] rounded-xl bg-[var(--ds-surface)]/95 backdrop-blur-xl border border-white/10 shadow-2xl py-1.5 z-[999]">
-                              {turmas.map((turma, ti) => (
+                              {turmaLabels.map((turma, ti) => (
                                 <button
                                   key={ti}
-                                  onClick={() => { setSelectedTurma(ti); setTurmaOpen(false); }}
+                                  onClick={() => { setSelectedIndex(ti); setTurmaOpen(false); }}
                                   className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                                    ti === selectedTurma
+                                    ti === selectedIndex
                                       ? 'text-white bg-white/10'
                                       : 'text-white/60 hover:text-white hover:bg-white/5'
                                   }`}

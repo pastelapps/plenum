@@ -94,7 +94,13 @@ export default function TabHero({
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-xs text-gray-500">Use value=&quot;dropdown&quot; para o seletor de turmas.</p>
+          <div className="text-xs text-gray-500 space-y-1">
+            <p><strong>Valores especiais:</strong></p>
+            <ul className="list-disc list-inside space-y-0.5 text-gray-400">
+              <li><code className="bg-gray-100 px-1 rounded">dropdown</code> — Exibe seletor de turmas (datas abertas)</li>
+              <li><code className="bg-gray-100 px-1 rounded">location_dynamic</code> — Exibe o local da turma selecionada automaticamente</li>
+            </ul>
+          </div>
           {heroBadges.map((badge, i) => (
             <div key={i} className="flex items-start gap-2 p-3 rounded-lg border bg-gray-50">
               <div className="flex-1 space-y-2">

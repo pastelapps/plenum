@@ -101,6 +101,66 @@ export async function deleteCourseDate(id: string) {
 }
 
 /**
+ * Clone a course date (turma). Copies all data except dates (reset to today).
+ */
+export async function cloneCourseDate(sourceTurmaId: string) {
+  const supabase = await createClient();
+
+  // Fetch source turma
+  const { data: source, error: fetchError } = await supabase
+    .from('course_dates')
+    .select('*')
+    .eq('id', sourceTurmaId)
+    .single();
+
+  if (fetchError || !source) {
+    return { error: fetchError?.message || 'Turma não encontrada' };
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+  const { id: _id, created_at: _ca, ...rest } = source as Record<string, unknown>;
+  void _id; void _ca;
+
+  const clone = {
+    ...rest,
+    label: `${(rest.label as string) || 'Turma'} (Cópia)`,
+    start_date: today,
+    end_date: today,
+    status: 'open',
+    sort_order: ((rest.sort_order as number) || 0) + 1,
+  };
+
+  const { data: result, error } = await supabase
+    .from('course_dates')
+    .insert(clone as any)
+    .select('id')
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin');
+  return { data: result as unknown as { id: string } };
+}
+
+/**
+ * Toggle course date status (e.g. open ↔ paused).
+ */
+export async function toggleCourseDateStatus(id: string, newStatus: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('course_dates')
+    .update({ status: newStatus })
+    .eq('id', id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/admin');
+  revalidatePath('/cursos');
+  return { success: true };
+}
+
+/**
  * Create/update instructor.
  */
 export async function upsertInstructor(data: Record<string, unknown>) {

@@ -296,8 +296,13 @@ export default function TabProgramacao({
                         <span>|</span>
                         <span>{instructorName}</span>
                         <span>|</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${turma.status === 'open' ? 'bg-green-100 text-green-700' : turma.status === 'closed' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
-                          {turma.status}
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                          turma.status === 'open' ? 'bg-green-100 text-green-700' :
+                          turma.status === 'paused' ? 'bg-amber-100 text-amber-700' :
+                          turma.status === 'closed' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {turma.status === 'open' ? 'Aberta' : turma.status === 'paused' ? 'Pausada' : turma.status === 'closed' ? 'Encerrada' : 'Cancelada'}
                         </span>
                         <span>|</span>
                         <span>{turma.program_days.length} dias</span>
@@ -359,6 +364,7 @@ export default function TabProgramacao({
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="open">Aberta</SelectItem>
+                              <SelectItem value="paused">Pausada</SelectItem>
                               <SelectItem value="closed">Encerrada</SelectItem>
                               <SelectItem value="cancelled">Cancelada</SelectItem>
                             </SelectContent>
