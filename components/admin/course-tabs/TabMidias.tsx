@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Upload, ImageIcon, X } from 'lucide-react';
+import { Plus, Trash2, Upload, ImageIcon, X, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { PartnerLogo } from '@/types/course';
+import GeneratePdfButton from '../GeneratePdfButton';
 
 interface Props {
   partnerLogos: PartnerLogo[];
@@ -19,6 +20,7 @@ interface Props {
   folderBgUrl: string;
   setFolderBgUrl: (v: string) => void;
   courseSlug: string;
+  courseId?: string;
 }
 
 export default function TabMidias({
@@ -27,6 +29,7 @@ export default function TabMidias({
   coverImageUrl, setCoverImageUrl,
   folderBgUrl, setFolderBgUrl,
   courseSlug,
+  courseId,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderBgInputRef = useRef<HTMLInputElement>(null);
@@ -308,19 +311,31 @@ export default function TabMidias({
 
       <Card>
         <CardHeader>
-          <CardTitle>Folder PDF</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Folder PDF
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <p className="text-xs text-gray-500">
+            Gere automaticamente o PDF do folder a partir dos dados do curso, ou cole uma URL manualmente.
+          </p>
+
+          {courseId && (
+            <GeneratePdfButton
+              courseId={courseId}
+              variant="full"
+              onGenerated={(url) => setFolderPdfUrl(url)}
+            />
+          )}
+
           <div className="space-y-2">
-            <Label>URL do Folder PDF</Label>
+            <Label>URL do Folder PDF (manual)</Label>
             <Input
               value={folderPdfUrl}
               onChange={(e) => setFolderPdfUrl(e.target.value)}
               placeholder="https://storage.supabase.co/.../folder.pdf"
             />
-            <p className="text-xs text-gray-500">
-              URL do PDF gerado ou enviado. Este PDF é enviado para leads que preenchem o formulário de folder.
-            </p>
           </div>
         </CardContent>
       </Card>

@@ -309,7 +309,7 @@ export interface Database {
         Row: {
           id: string;
           course_id: string;
-          instructor_id: string;
+          instructor_ids: string[];
           start_date: string;
           end_date: string;
           label: string | null;
@@ -326,7 +326,7 @@ export interface Database {
         Insert: {
           id?: string;
           course_id: string;
-          instructor_id: string;
+          instructor_ids?: string[];
           start_date: string;
           end_date: string;
           label?: string | null;
@@ -343,7 +343,7 @@ export interface Database {
         Update: {
           id?: string;
           course_id?: string;
-          instructor_id?: string;
+          instructor_ids?: string[];
           start_date?: string;
           end_date?: string;
           label?: string | null;
@@ -363,13 +363,6 @@ export interface Database {
             columns: ['course_id'];
             isOneToOne: false;
             referencedRelation: 'courses';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'course_dates_instructor_id_fkey';
-            columns: ['instructor_id'];
-            isOneToOne: false;
-            referencedRelation: 'instructors';
             referencedColumns: ['id'];
           },
         ];

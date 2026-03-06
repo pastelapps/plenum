@@ -13,12 +13,14 @@ import {
   Copy,
   Pause,
   Play,
+  Plus,
   MapPin,
   Users,
   Calendar,
 } from 'lucide-react';
 import type { CourseWithDatesPreview, CourseDatePreview } from '@/lib/queries/courses';
 import { cloneCourseDate, toggleCourseDateStatus } from '@/lib/actions/courses';
+import GeneratePdfButton from './GeneratePdfButton';
 
 // ─── Status Maps ────────────────────────────────────────
 const courseStatusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
@@ -134,10 +136,12 @@ export default function CourseDashboardTable({ courses }: Props) {
               </div>
 
               {/* Actions */}
-              <div className="shrink-0 flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="sm" asChild>
+              <div className="shrink-0 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <GeneratePdfButton courseId={course.id} variant="compact" />
+                <Button variant="outline" size="sm" className="text-gray-800 border-gray-300" asChild>
                   <Link href={`/admin/cursos/${course.id}`}>
-                    <Pencil className="w-4 h-4" />
+                    <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                    Editar
                   </Link>
                 </Button>
                 {course.status === 'published' && (
@@ -155,10 +159,7 @@ export default function CourseDashboardTable({ courses }: Props) {
               <div className="border-t bg-gray-50/50">
                 {course.dates_preview.length === 0 ? (
                   <div className="px-6 py-8 text-center text-sm text-gray-400">
-                    Nenhuma turma cadastrada.{' '}
-                    <Link href={`/admin/cursos/${course.id}`} className="text-blue-500 hover:underline">
-                      Adicione uma turma
-                    </Link>
+                    Nenhuma turma cadastrada.
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-100">
@@ -175,6 +176,16 @@ export default function CourseDashboardTable({ courses }: Props) {
                     ))}
                   </div>
                 )}
+                {/* Add turma button */}
+                <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-xs text-gray-400">{totalCount} turma{totalCount !== 1 ? 's' : ''} cadastrada{totalCount !== 1 ? 's' : ''}</span>
+                  <Button variant="outline" size="sm" className="text-gray-800 border-gray-300" asChild>
+                    <Link href={`/admin/cursos/${course.id}/turmas/nova`}>
+                      <Plus className="w-3.5 h-3.5 mr-1.5" />
+                      Nova Turma
+                    </Link>
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -235,7 +246,7 @@ function TurmaRow({
           )}
           <span className="flex items-center gap-1">
             <Users className="w-3 h-3" />
-            {turma.instructor_name}
+            {turma.instructor_names[0]}{turma.instructor_names.length > 1 ? ` +${turma.instructor_names.length - 1}` : ''}
           </span>
           {turma.max_students && (
             <span>Máx: {turma.max_students}</span>
@@ -275,8 +286,9 @@ function TurmaRow({
 
         {/* Edit */}
         <Button variant="ghost" size="sm" asChild>
-          <Link href={`/admin/cursos/${courseId}?tab=programacao&turma=${turma.id}`}>
-            <Pencil className="w-3.5 h-3.5" />
+          <Link href={`/admin/cursos/${courseId}/turmas/${turma.id}`}>
+            <Pencil className="w-3.5 h-3.5 mr-1" />
+            Editar
           </Link>
         </Button>
       </div>

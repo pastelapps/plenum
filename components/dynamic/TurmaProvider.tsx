@@ -24,8 +24,8 @@ export interface TurmaContextValue {
   turmaLabels: string[];
   /** Active turma program days */
   programDays: ProgramDay[];
-  /** Active turma instructor */
-  instructor: Instructor | null;
+  /** Active turma instructors */
+  instructors: Instructor[];
   /** Active turma location data */
   locationVenue: string;
   locationAddress: string;
@@ -69,7 +69,7 @@ export default function TurmaProvider({ dates, heroBadges, children }: TurmaProv
 
     // Derived data from active course date
     const programDays = activeCourseDate?.program_days || [];
-    const instructor = activeCourseDate?.instructor || null;
+    const instructors = activeCourseDate?.instructors || [];
     const locationVenue = activeCourseDate?.location_venue || '';
     const locationAddress = activeCourseDate?.location_address || '';
     const locationMapEmbed = activeCourseDate?.location_map_embed || '';
@@ -96,7 +96,7 @@ export default function TurmaProvider({ dates, heroBadges, children }: TurmaProv
       setSelectedIndex,
       turmaLabels,
       programDays,
-      instructor,
+      instructors,
       locationVenue,
       locationAddress,
       locationMapEmbed,
