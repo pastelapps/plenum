@@ -55,7 +55,8 @@ export function renderSpeaker(ctx: PdfContext, fonts: FontData[]): SatoriNode | 
       // Photo
       instructor.photo_url
         ? h('img', {
-            src: instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url,
+            src: ctx.imageCache.get(instructor.photo_url) ??
+              (instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url),
             width: 200,
             height: 200,
             style: { borderRadius: '50%', objectFit: 'cover', border: `4px solid ${primary}44` },
@@ -134,7 +135,8 @@ export function renderSpeaker(ctx: PdfContext, fonts: FontData[]): SatoriNode | 
           },
             inst.photo_url
               ? h('img', {
-                  src: inst.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${inst.photo_url}` : inst.photo_url,
+                  src: ctx.imageCache.get(inst.photo_url) ??
+                    (inst.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${inst.photo_url}` : inst.photo_url),
                   width: 64,
                   height: 64,
                   style: { borderRadius: '50%', objectFit: 'cover' },

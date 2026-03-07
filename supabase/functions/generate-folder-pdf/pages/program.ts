@@ -67,7 +67,8 @@ function _programPage(
         },
           instructor.photo_url
             ? h('img', {
-                src: instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url,
+                src: ctx.imageCache.get(instructor.photo_url) ??
+                  (instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url),
                 width: 56,
                 height: 56,
                 style: { borderRadius: '50%', objectFit: 'cover' },

@@ -42,7 +42,8 @@ export function renderCover(ctx: PdfContext, fonts: FontData[]): SatoriNode {
     // Company Logo / Name at top
     company.logo_url
       ? h('img', {
-          src: company.logo_url.startsWith('/') ? `${ctx.siteBaseUrl}${company.logo_url}` : company.logo_url,
+          src: ctx.imageCache.get(company.logo_url) ??
+            (company.logo_url.startsWith('/') ? `${ctx.siteBaseUrl}${company.logo_url}` : company.logo_url),
           width: 280,
           height: 80,
           style: { objectFit: 'contain', alignSelf: 'center', marginTop: 30 },
@@ -138,7 +139,8 @@ export function renderCover(ctx: PdfContext, fonts: FontData[]): SatoriNode {
         },
           instructor.photo_url
             ? h('img', {
-                src: instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url,
+                src: ctx.imageCache.get(instructor.photo_url) ??
+                  (instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url),
                 width: 72,
                 height: 72,
                 style: { borderRadius: '50%', objectFit: 'cover' },

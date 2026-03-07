@@ -117,7 +117,8 @@ export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
               },
                 t.thumbnail_url
                   ? h('img', {
-                      src: t.thumbnail_url.startsWith('/') ? `${ctx.siteBaseUrl}${t.thumbnail_url}` : t.thumbnail_url,
+                      src: ctx.imageCache.get(t.thumbnail_url) ??
+                        (t.thumbnail_url.startsWith('/') ? `${ctx.siteBaseUrl}${t.thumbnail_url}` : t.thumbnail_url),
                       width: 48,
                       height: 48,
                       style: { borderRadius: '50%', objectFit: 'cover' },
@@ -173,18 +174,22 @@ export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
               marginBottom: 28,
             },
           },
-            ...course.partner_logos.map((logo) =>
-              logo.url
+            ...course.partner_logos.map((logo) => {
+              const imgSrc = logo.url
+                ? (ctx.imageCache.get(logo.url) ??
+                    (logo.url.startsWith('/') ? `${ctx.siteBaseUrl}${logo.url}` : logo.url))
+                : '';
+              return imgSrc
                 ? h('img', {
-                    src: logo.url.startsWith('/') ? `${ctx.siteBaseUrl}${logo.url}` : logo.url,
+                    src: imgSrc,
                     width: logo.width || 120,
                     height: logo.height || 48,
                     style: { objectFit: 'contain' },
                   })
                 : h('span', {
                     style: { fontSize: 14, fontFamily: body, color: '#ffffff88' },
-                  }, logo.name),
-            ),
+                  }, logo.name);
+            }),
           ),
         ]
       : []),

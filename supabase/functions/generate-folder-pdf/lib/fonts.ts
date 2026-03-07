@@ -1,60 +1,90 @@
 import type { FontData, DesignSystemData } from './types.ts';
 
-function ts(): string {
-  return new Date().toISOString();
-}
-
 /**
  * Fetch font as ArrayBuffer.
- * Validates the font is TTF/OTF (not WOFF/WOFF2) since satori only supports those.
+ * Satori supports TTF, OTF, and WOFF — only WOFF2 is rejected.
  */
 async function fetchFont(url: string): Promise<ArrayBuffer> {
-  console.log(`[${ts()}] [FONTS] Fetching font: ${url.slice(0, 100)}...`);
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch font: ${url} (${res.status})`);
+  if (!res.ok) throw new Error(`Failed to fetch font: ${url.slice(0, 80)} (${res.status})`);
   const buf = await res.arrayBuffer();
 
-  // Check file signature to reject WOFF/WOFF2
+  // Reject WOFF2 (only format not supported by satori)
   if (buf.byteLength >= 4) {
-    const header = new Uint8Array(buf.slice(0, 4));
-    const sig = String.fromCharCode(...header);
+    const sig = String.fromCharCode(...new Uint8Array(buf.slice(0, 4)));
     if (sig === 'wOF2') {
-      throw new Error(`Font is WOFF2 format (not supported by satori). URL: ${url.slice(0, 80)}`);
-    }
-    if (sig === 'wOFF') {
-      throw new Error(`Font is WOFF format (not supported by satori). URL: ${url.slice(0, 80)}`);
+      throw new Error(`Font is WOFF2 (not supported). URL: ${url.slice(0, 60)}`);
     }
   }
 
-  console.log(`[${ts()}] [FONTS] OK font loaded: ${buf.byteLength} bytes`);
+  console.log(`[FONTS] Loaded ${(buf.byteLength / 1024).toFixed(0)}KB from ${url.slice(0, 60)}`);
   return buf;
 }
 
 /**
- * Fetch Inter TTF font URLs from Google Fonts CSS API.
- * Uses an older User-Agent to force Google Fonts to serve TTF instead of WOFF2.
+ * Load Inter font as fallback using multiple strategies.
+ * NOTE: satori does NOT support variable fonts (fvar table crash in opentype.js).
+ * Strategy 1: Google Fonts CSS API with Android 2.2 UA → static TTF per weight
+ * Strategy 2: Google Fonts CSS API with IE11 UA → WOFF per weight
  */
-async function getInterTtfUrls(weights: number[]): Promise<Map<number, string>> {
-  const weightsStr = weights.join(';');
-  const cssUrl = `https://fonts.googleapis.com/css2?family=Inter:wght@${weightsStr}`;
+async function loadInterFallback(weightsToLoad: number[]): Promise<FontData[]> {
+  const fonts: FontData[] = [];
 
-  console.log(`[${ts()}] [FONTS] Fetching Google Fonts CSS for TTF format...`);
-  console.log(`[${ts()}] [FONTS]   URL: ${cssUrl}`);
+  // Strategy 1: Google Fonts CSS with Android 2.2 UA → static TTF per weight
+  // (satori does NOT support variable fonts — fvar table parsing crashes opentype.js)
+  try {
+    const urls = await fetchGoogleFontsCss(weightsToLoad,
+      'Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1');
+    if (urls.size > 0) {
+      for (const weight of weightsToLoad) {
+        const url = urls.get(weight);
+        if (!url) continue;
+        try {
+          const data = await fetchFont(url);
+          fonts.push({ name: 'Inter', data, weight, style: 'normal' });
+        } catch { /* skip weight */ }
+      }
+      if (fonts.length > 0) return fonts;
+    }
+  } catch (e) {
+    console.warn(`[FONTS] Strategy 1 (TTF) failed:`, e instanceof Error ? e.message : e);
+  }
 
-  // Use IE11 user-agent to get TTF format instead of WOFF2
-  const res = await fetch(cssUrl, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; MSIE 11.0; Windows NT 6.1; Trident/7.0)',
-    },
-  });
+  // Strategy 2: Google Fonts CSS with IE11 UA → WOFF per weight
+  try {
+    const urls = await fetchGoogleFontsCss(weightsToLoad,
+      'Mozilla/5.0 (compatible; MSIE 11.0; Windows NT 6.1; Trident/7.0)');
+    if (urls.size > 0) {
+      for (const weight of weightsToLoad) {
+        const url = urls.get(weight);
+        if (!url) continue;
+        try {
+          const data = await fetchFont(url);
+          fonts.push({ name: 'Inter', data, weight, style: 'normal' });
+        } catch { /* skip weight */ }
+      }
+      if (fonts.length > 0) return fonts;
+    }
+  } catch (e) {
+    console.warn(`[FONTS] Strategy 2 (WOFF) failed:`, e instanceof Error ? e.message : e);
+  }
 
-  if (!res.ok) throw new Error(`Google Fonts CSS fetch failed: HTTP ${res.status}`);
+  throw new Error('All font loading strategies failed.');
+}
+
+/**
+ * Fetch font URLs from Google Fonts CSS API.
+ */
+async function fetchGoogleFontsCss(
+  weights: number[],
+  userAgent: string,
+): Promise<Map<number, string>> {
+  const cssUrl = `https://fonts.googleapis.com/css2?family=Inter:wght@${weights.join(';')}`;
+  const res = await fetch(cssUrl, { headers: { 'User-Agent': userAgent } });
+  if (!res.ok) throw new Error(`Google Fonts CSS failed: HTTP ${res.status}`);
   const css = await res.text();
-  console.log(`[${ts()}] [FONTS] Google Fonts CSS response: ${css.length} chars`);
 
   const urlMap = new Map<number, string>();
-
-  // Parse @font-face blocks to extract URLs and weights
   const fontFaceRegex = /@font-face\s*\{([^}]+)\}/g;
   let match;
   while ((match = fontFaceRegex.exec(css)) !== null) {
@@ -62,32 +92,17 @@ async function getInterTtfUrls(weights: number[]): Promise<Map<number, string>> 
     const weightMatch = block.match(/font-weight:\s*(\d+)/);
     const urlMatch = block.match(/src:\s*url\(([^)]+)\)/);
     if (weightMatch && urlMatch) {
-      const weight = parseInt(weightMatch[1]);
-      const url = urlMatch[1];
-      urlMap.set(weight, url);
-      console.log(`[${ts()}] [FONTS] Found Inter TTF: weight=${weight}`);
+      urlMap.set(parseInt(weightMatch[1]), urlMatch[1]);
     }
   }
-
-  if (urlMap.size === 0) {
-    console.error(`[${ts()}] [FONTS] No font URLs parsed from CSS. First 500 chars of CSS:\n${css.slice(0, 500)}`);
-    throw new Error('Failed to parse any font URLs from Google Fonts CSS');
-  }
-
-  console.log(`[${ts()}] [FONTS] Parsed ${urlMap.size} Inter TTF URLs from Google Fonts CSS`);
   return urlMap;
 }
 
 /**
  * Load fonts for satori.
- * Satori requires TTF or OTF fonts (NOT WOFF/WOFF2).
- * Falls back to Inter TTF from Google Fonts if design system fonts are unavailable or WOFF2.
+ * Falls back to Inter if design system fonts are unavailable.
  */
 export async function loadFonts(ds: DesignSystemData): Promise<FontData[]> {
-  console.log(`[${ts()}] [FONTS] Loading fonts...`);
-  console.log(`[${ts()}] [FONTS]   DS heading: "${ds.font_heading}", heading_urls: ${ds.font_heading_urls?.length || 0}`);
-  console.log(`[${ts()}] [FONTS]   DS body: "${ds.font_body}", body_urls: ${ds.font_body_urls?.length || 0}`);
-
   const fonts: FontData[] = [];
 
   // Try loading heading font from design system URLs
@@ -96,9 +111,7 @@ export async function loadFonts(ds: DesignSystemData): Promise<FontData[]> {
       try {
         const data = await fetchFont(entry.url);
         fonts.push({ name: ds.font_heading, data, weight: entry.weight, style: 'normal' });
-      } catch (e) {
-        console.warn(`[${ts()}] [FONTS] Heading font failed (will use fallback):`, e instanceof Error ? e.message : e);
-      }
+      } catch { /* skip */ }
     }
   }
 
@@ -108,84 +121,38 @@ export async function loadFonts(ds: DesignSystemData): Promise<FontData[]> {
       try {
         const data = await fetchFont(entry.url);
         fonts.push({ name: ds.font_body, data, weight: entry.weight, style: 'normal' });
-      } catch (e) {
-        console.warn(`[${ts()}] [FONTS] Body font failed (will use fallback):`, e instanceof Error ? e.message : e);
-      }
+      } catch { /* skip */ }
     }
   }
 
-  // If no fonts were loaded (or all were WOFF2), fallback to Inter TTF
+  // Fallback to Inter
   if (fonts.length === 0) {
-    console.log(`[${ts()}] [FONTS] No DS fonts loaded, falling back to Inter TTF from Google Fonts`);
-    const weightsToLoad = [400, 600, 700, 800];
-
-    try {
-      const urlMap = await getInterTtfUrls(weightsToLoad);
-
-      const promises = weightsToLoad.map(async (weight) => {
-        const url = urlMap.get(weight);
-        if (!url) {
-          console.warn(`[${ts()}] [FONTS] No URL found for Inter weight ${weight}`);
-          return null;
-        }
-        try {
-          const data = await fetchFont(url);
-          return { name: 'Inter', data, weight, style: 'normal' as const };
-        } catch (e) {
-          console.warn(`[${ts()}] [FONTS] Failed to load Inter ${weight}:`, e instanceof Error ? e.message : e);
-          return null;
-        }
-      });
-
-      const results = await Promise.all(promises);
-      for (const r of results) {
-        if (r) fonts.push(r);
-      }
-    } catch (e) {
-      console.error(`[${ts()}] [FONTS] CRITICAL: Failed to get Inter TTF URLs:`, e instanceof Error ? e.message : e);
-      throw new Error(`Cannot load any fonts: ${e instanceof Error ? e.message : e}`);
-    }
+    console.log(`[FONTS] No DS fonts, falling back to Inter...`);
+    const interFonts = await loadInterFallback([400, 700]);
+    fonts.push(...interFonts);
   } else {
-    // Ensure we have body font if only heading was loaded
+    // Ensure we have body font
     const hasBody = fonts.some((f) => f.name === ds.font_body);
     if (!hasBody) {
-      console.log(`[${ts()}] [FONTS] No body font loaded, adding Inter TTF as body fallback`);
       try {
-        const urlMap = await getInterTtfUrls([400, 600, 700]);
-        for (const weight of [400, 600, 700]) {
-          const url = urlMap.get(weight);
-          if (!url) continue;
-          try {
-            const data = await fetchFont(url);
-            fonts.push({ name: ds.font_body, data, weight, style: 'normal' });
-          } catch {
-            // skip individual weight failures
-          }
+        const interFonts = await loadInterFallback([400, 700]);
+        for (const f of interFonts) {
+          fonts.push({ ...f, name: ds.font_body });
         }
-      } catch (e) {
-        console.warn(`[${ts()}] [FONTS] Body fallback failed:`, e instanceof Error ? e.message : e);
-      }
+      } catch { /* continue without body fallback */ }
     }
   }
 
-  console.log(`[${ts()}] [FONTS] Total fonts loaded: ${fonts.length}`);
-  fonts.forEach((f, i) => {
-    console.log(`[${ts()}] [FONTS]   ${i + 1}. name="${f.name}" weight=${f.weight} size=${f.data.byteLength} bytes`);
-  });
-
-  if (fonts.length === 0) {
-    throw new Error('No fonts could be loaded. Cannot render PDF.');
-  }
+  console.log(`[FONTS] ${fonts.length} fonts ready`);
+  if (fonts.length === 0) throw new Error('No fonts could be loaded.');
 
   return fonts;
 }
 
 /**
  * Get the font family name to use in satori styles.
- * Returns the DS font name if loaded, otherwise 'Inter'.
  */
 export function getFontFamily(ds: DesignSystemData, type: 'heading' | 'body', fonts: FontData[]): string {
   const targetName = type === 'heading' ? ds.font_heading : ds.font_body;
-  const hasFont = fonts.some((f) => f.name === targetName);
-  return hasFont ? targetName : 'Inter';
+  return fonts.some((f) => f.name === targetName) ? targetName : 'Inter';
 }
