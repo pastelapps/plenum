@@ -391,6 +391,72 @@ body {
 }
 
 /* ═══════════════════════════════════════
+   3D PERSPECTIVE CAROUSEL
+   ═══════════════════════════════════════ */
+.carousel-3d {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  transform-style: preserve-3d;
+  perspective: 900px;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .carousel-3d {
+    height: 480px;
+  }
+}
+
+.carousel-3d-item {
+  position: absolute;
+  width: 280px;
+  height: 380px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  pointer-events: auto;
+
+  --r: calc(var(--active) - var(--offset));
+  --abs: max(calc(var(--r) * -1), var(--r));
+
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform:
+    rotateY(calc(-8deg * var(--r)))
+    translateX(calc(-320px * var(--r)))
+    translateZ(calc(-60px * var(--abs)));
+  z-index: calc(var(--items) - var(--abs));
+  filter: brightness(calc(1 - 0.15 * var(--abs)));
+}
+
+@media (min-width: 768px) {
+  .carousel-3d-item {
+    width: 340px;
+    height: 440px;
+    transform:
+      rotateY(calc(-10deg * var(--r)))
+      translateX(calc(-380px * var(--r)))
+      translateZ(calc(-80px * var(--abs)));
+  }
+}
+
+@media (min-width: 1024px) {
+  .carousel-3d-item {
+    width: 380px;
+    height: 480px;
+    transform:
+      rotateY(calc(-10deg * var(--r)))
+      translateX(calc(-420px * var(--r)))
+      translateZ(calc(-80px * var(--abs)));
+  }
+}
+
+/* ═══════════════════════════════════════
    UTILITIES
    ═══════════════════════════════════════ */
 .hide-scrollbar {

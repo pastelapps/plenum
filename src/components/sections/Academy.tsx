@@ -1,6 +1,6 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 
 const CATEGORIES = ["Todos", "Gestão", "Licitações", "Legislativo", "Governança", "IA Pública"];
@@ -46,53 +46,58 @@ const COURSES = [
 export default function Academy() {
     const sectionRef = useRef<HTMLElement>(null);
     const [activeCategory, setActiveCategory] = useState("Todos");
+    const [position, setPosition] = useState(0);
 
     const filteredCourses = COURSES.filter(c =>
         activeCategory === "Todos" || c.category.toLowerCase().includes(activeCategory.toLowerCase())
     );
 
+    // Reset carousel position when filter changes
+    const handleFilter = useCallback((cat: string) => {
+        setActiveCategory(cat);
+        setPosition(0);
+    }, []);
+
+    const goNext = useCallback(() => {
+        setPosition(prev => Math.min(prev + 1, filteredCourses.length - 1));
+    }, [filteredCourses.length]);
+
+    const goPrev = useCallback(() => {
+        setPosition(prev => Math.max(prev - 1, 0));
+    }, []);
+
+    // Scroll-triggered entrance
     useEffect(() => {
         const ctx = gsap.context(() => {
             gsap.from(".academy-header", {
                 y: 40, opacity: 0, duration: 0.7, ease: "power3.out",
                 scrollTrigger: { trigger: ".academy-section", start: "top 80%" }
             });
-
-            gsap.from(".course-card", {
-                opacity: 0, y: 60, duration: 0.8, stagger: 0.12, ease: "power3.out",
-                scrollTrigger: { trigger: ".courses-grid", start: "top 80%" }
-            });
-
-            document.querySelectorAll(".course-card").forEach(card => {
-                const img = card.querySelector(".course-card-img");
-                card.addEventListener("mouseenter", () => {
-                    gsap.to(card, { y: -8, duration: 0.3, ease: "power2.out" });
-                    gsap.to(img, { scale: 1.05, duration: 0.6, ease: "power2.out" });
-                });
-                card.addEventListener("mouseleave", () => {
-                    gsap.to(card, { y: 0, duration: 0.4 });
-                    gsap.to(img, { scale: 1, duration: 0.6 });
-                });
+            gsap.from(".academy-carousel-wrapper", {
+                y: 60, opacity: 0, duration: 0.9, ease: "power3.out",
+                scrollTrigger: { trigger: ".academy-carousel-wrapper", start: "top 85%" }
             });
         }, sectionRef);
-
         return () => ctx.revert();
     }, []);
 
-    const updateFilter = (cat: string) => {
-        gsap.to(".course-card", {
-            opacity: 0, y: 10, duration: 0.2, stagger: 0.03,
-            onComplete: () => {
-                setActiveCategory(cat);
-                setTimeout(() => {
-                    gsap.fromTo(".course-card",
-                        { opacity: 0, y: 30 },
-                        { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power3.out", clearProps: "all" }
-                    );
-                }, 50);
-            }
+    // Preload images
+    useEffect(() => {
+        COURSES.forEach((course) => {
+            const img = new Image();
+            img.src = course.image;
         });
-    };
+    }, []);
+
+    // Keyboard navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "ArrowRight") goNext();
+            if (e.key === "ArrowLeft") goPrev();
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [goNext, goPrev]);
 
     return (
         <section ref={sectionRef} className="academy-section bg-[#F1F1F1] py-20 lg:py-32">
@@ -109,7 +114,7 @@ export default function Academy() {
                         {CATEGORIES.map(cat => (
                             <button
                                 key={cat}
-                                onClick={() => updateFilter(cat)}
+                                onClick={() => handleFilter(cat)}
                                 className={`filter-chip ${activeCategory === cat ? 'active' : ''}`}
                             >
                                 {cat}
@@ -118,53 +123,107 @@ export default function Academy() {
                     </div>
                 </div>
 
-                {/* 2-column grid — HA style */}
-                <div className="courses-grid grid grid-cols-1 md:grid-cols-2 gap-5 lg:gap-6">
-                    {filteredCourses.map((course) => (
-                        <div
-                            key={course.id}
-                            className="course-card relative rounded-[24px] overflow-hidden cursor-pointer group"
-                            style={{ aspectRatio: "4/3" }}
-                        >
-                            <img
-                                src={course.image}
-                                alt={course.title}
-                                className="course-card-img absolute inset-0 w-full h-full object-cover transform-gpu"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+                {/* 3D Perspective Carousel */}
+                <div className="academy-carousel-wrapper">
+                    <div
+                        className="carousel-3d"
+                        style={{
+                            "--items": filteredCourses.length,
+                            "--active": position + 1,
+                        } as React.CSSProperties}
+                    >
+                        {filteredCourses.map((course, index) => {
+                            const offset = index + 1;
+                            const r = (position + 1) - offset;
+                            const absR = Math.abs(r);
+                            const isCurrent = r === 0;
 
-                            {/* Badge */}
-                            <div className="absolute top-6 left-6 z-10">
-                                <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 backdrop-blur-md border border-white/20 rounded-full text-[11px] font-semibold tracking-widest text-white uppercase">
-                                    <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
-                                    PLENUM
-                                </span>
-                            </div>
+                            return (
+                                <div
+                                    key={course.id}
+                                    className="carousel-3d-item"
+                                    style={{ "--offset": offset } as React.CSSProperties}
+                                    onClick={() => !isCurrent && setPosition(index)}
+                                >
+                                    <img
+                                        src={course.image}
+                                        alt={course.title}
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        draggable={false}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
 
-                            {/* Bottom content */}
-                            <div className="absolute bottom-0 left-0 right-0 p-7 lg:p-8 z-10">
-                                <div className="flex items-center mb-4">
-                                    <div className="flex -space-x-2">
-                                        {[1, 2, 3].map(i => (
-                                            <div key={i} className="w-8 h-8 rounded-full bg-white/20 backdrop-blur border-2 border-white/30" />
-                                        ))}
+                                    {/* Badge */}
+                                    <div className="absolute top-5 left-5 z-10">
+                                        <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-semibold tracking-widest text-white uppercase">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
+                                            PLENUM
+                                        </span>
                                     </div>
-                                    <span className="ml-2 text-xs text-white/70 font-medium">{course.students}</span>
+
+                                    {/* Card content */}
+                                    <div
+                                        className="absolute bottom-0 left-0 right-0 p-6 z-10 transition-opacity duration-300"
+                                        style={{ opacity: isCurrent ? 1 : absR <= 1 ? 0.3 : 0 }}
+                                    >
+                                        <div className="flex items-center mb-3">
+                                            <div className="flex -space-x-2">
+                                                {[1, 2, 3].map(j => (
+                                                    <div key={j} className="w-6 h-6 rounded-full bg-white/20 backdrop-blur border-2 border-white/30" />
+                                                ))}
+                                            </div>
+                                            <span className="ml-2 text-[11px] text-white/70 font-medium">{course.students}</span>
+                                        </div>
+
+                                        <p className="text-[10px] text-white/60 uppercase tracking-widest font-semibold mb-1.5">
+                                            {course.category}
+                                        </p>
+                                        <h3 className="text-lg lg:text-xl font-display font-medium text-white mb-4 leading-tight">
+                                            {course.title}
+                                        </h3>
+
+                                        {isCurrent && (
+                                            <a href="#" className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
+                                                Ver Curso <ArrowRight className="w-3 h-3" />
+                                            </a>
+                                        )}
+                                    </div>
                                 </div>
+                            );
+                        })}
+                    </div>
 
-                                <p className="text-[11px] text-white/60 uppercase tracking-widest font-semibold mb-2">
-                                    {course.category}
-                                </p>
-                                <h3 className="text-xl lg:text-2xl font-display font-medium text-white mb-5 leading-tight">
-                                    {course.title}
-                                </h3>
+                    {/* Navigation */}
+                    <div className="flex items-center justify-center gap-3 mt-8">
+                        <button
+                            onClick={goPrev}
+                            disabled={position === 0}
+                            className="w-10 h-10 rounded-[10px] border-2 border-black/15 bg-white hover:bg-white/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+                            aria-label="Curso anterior"
+                        >
+                            <ArrowLeft className="w-4 h-4 text-black" />
+                        </button>
 
-                                <a href="#" className="inline-flex items-center gap-2 px-5 py-2.5 bg-transparent border border-white/25 rounded-full text-[12px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
-                                    Ver Cursos <ArrowRight className="w-3.5 h-3.5" />
-                                </a>
-                            </div>
+                        <div className="flex items-center gap-2 mx-3">
+                            {filteredCourses.map((_, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setPosition(idx)}
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === position ? "w-8 bg-[#0D0D0D]" : "w-4 bg-[#0D0D0D]/25 hover:bg-[#0D0D0D]/50"}`}
+                                    aria-label={`Ir para curso ${idx + 1}`}
+                                />
+                            ))}
                         </div>
-                    ))}
+
+                        <button
+                            onClick={goNext}
+                            disabled={position >= filteredCourses.length - 1}
+                            className="w-10 h-10 rounded-[10px] border-2 border-black/15 bg-white hover:bg-white/80 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+                            aria-label="Próximo curso"
+                        >
+                            <ArrowRight className="w-4 h-4 text-black" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>

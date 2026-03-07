@@ -1,18 +1,76 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { gsap } from "@/lib/gsap";
 
 const STATS = [
-    { value: "12.000+", label: "Líderes Formados" },
-    { value: "350+", label: "Turmas Realizadas" },
-    { value: "98%", label: "Taxa de Satisfação" },
-    { value: "27", label: "Estados Atendidos" },
+    { end: 12000, suffix: "+", separator: true, label: "Líderes Formados" },
+    { end: 350, suffix: "+", separator: false, label: "Turmas Realizadas" },
+    { end: 98, suffix: "%", separator: false, label: "Taxa de Satisfação" },
+    { end: 27, suffix: "", separator: false, label: "Estados Atendidos" },
 ];
 
 const LOGOS = [
     "TCU", "CGU", "ENAP", "STF", "TSE", "MPF",
     "IBGE", "BNDES", "INSS", "ANATEL", "ANVISA", "ANA"
 ];
+
+function formatNumber(n: number, useSeparator: boolean): string {
+    const rounded = Math.round(n);
+    if (!useSeparator) return String(rounded);
+    return rounded.toLocaleString("pt-BR");
+}
+
+function CountUp({ end, suffix, separator, duration = 2 }: {
+    end: number;
+    suffix: string;
+    separator: boolean;
+    duration?: number;
+}) {
+    const [display, setDisplay] = useState("0" + suffix);
+    const ref = useRef<HTMLDivElement>(null);
+    const hasAnimated = useRef(false);
+
+    const startCount = useCallback(() => {
+        if (hasAnimated.current) return;
+        hasAnimated.current = true;
+
+        const obj = { val: 0 };
+        gsap.to(obj, {
+            val: end,
+            duration,
+            ease: "power2.out",
+            onUpdate: () => {
+                setDisplay(formatNumber(obj.val, separator) + suffix);
+            },
+            onComplete: () => {
+                setDisplay(formatNumber(end, separator) + suffix);
+            },
+        });
+    }, [end, suffix, separator, duration]);
+
+    useEffect(() => {
+        if (!ref.current) return;
+
+        const trigger = gsap.timeline({
+            scrollTrigger: {
+                trigger: ref.current,
+                start: "top 85%",
+                once: true,
+                onEnter: startCount,
+            },
+        });
+
+        return () => {
+            trigger.kill();
+        };
+    }, [startCount]);
+
+    return (
+        <div ref={ref} className="text-stat text-[#C9A227] mb-3">
+            {display}
+        </div>
+    );
+}
 
 export default function SocialProof() {
     const sectionRef = useRef<HTMLElement>(null);
@@ -48,7 +106,12 @@ export default function SocialProof() {
                 <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-20 lg:mb-28">
                     {STATS.map((stat, i) => (
                         <div key={i} className="stat-item text-center">
-                            <div className="text-stat text-[#C9A227] mb-3">{stat.value}</div>
+                            <CountUp
+                                end={stat.end}
+                                suffix={stat.suffix}
+                                separator={stat.separator}
+                                duration={2.2}
+                            />
                             <p className="text-sm text-white/50 uppercase tracking-wider font-medium">{stat.label}</p>
                         </div>
                     ))}
