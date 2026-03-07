@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowLeft, ArrowRight, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 
 const CATEGORIES = ["Todos", "Gestão", "Licitações", "Legislativo", "Governança", "IA Pública"];
@@ -8,18 +8,15 @@ const CATEGORIES = ["Todos", "Gestão", "Licitações", "Legislativo", "Governan
 const COURSES = [
     {
         id: 1,
-        title: "Relacionamento Governamental e Captação de Recursos",
+        title: "Gestão de Contratos Públicos",
         category: "GESTÃO",
-        badge: "IMERSÃO",
-        professor: "Daniel Angotti",
-        professorImage: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&auto=format&fit=crop",
-        image: "/fotocursoteste.jpg",
+        students: "+400",
+        image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2070&auto=format&fit=crop",
     },
     {
         id: 2,
         title: "Nova Lei de Licitações PRO",
         category: "LICITAÇÕES",
-        badge: "SEMINÁRIO",
         students: "+350",
         image: "https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?q=80&w=2070&auto=format&fit=crop",
     },
@@ -27,7 +24,6 @@ const COURSES = [
         id: 3,
         title: "Governança Corporativa",
         category: "GOVERNANÇA",
-        badge: "GESTÃO",
         students: "+200",
         image: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2070&auto=format&fit=crop",
     },
@@ -35,7 +31,6 @@ const COURSES = [
         id: 4,
         title: "IA Aplicada ao Setor Público",
         category: "IA PÚBLICA",
-        badge: "IMERSÃO",
         students: "+280",
         image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2070&auto=format&fit=crop",
     },
@@ -43,7 +38,6 @@ const COURSES = [
         id: 5,
         title: "Liderança em Organizações Públicas",
         category: "GESTÃO",
-        badge: "SEMINÁRIO",
         students: "+500",
         image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
     },
@@ -106,7 +100,7 @@ export default function Academy() {
     }, [goNext, goPrev]);
 
     return (
-        <section id="academy" ref={sectionRef} className="academy-section bg-[#F1F1F1] py-20 lg:py-32">
+        <section ref={sectionRef} className="academy-section bg-[#F1F1F1] py-20 lg:py-32">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
                 {/* Section header */}
                 <div className="academy-header text-center mb-12 lg:mb-16">
@@ -159,11 +153,11 @@ export default function Academy() {
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/5" />
 
-                                    {/* Badge - shows course type */}
+                                    {/* Badge */}
                                     <div className="absolute top-5 left-5 z-10">
                                         <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/15 backdrop-blur-md border border-white/20 rounded-full text-[10px] font-semibold tracking-widest text-white uppercase">
                                             <span className="w-1.5 h-1.5 rounded-full bg-[#C9A227]" />
-                                            {course.badge}
+                                            PLENUM
                                         </span>
                                     </div>
 
@@ -172,22 +166,26 @@ export default function Academy() {
                                         className="absolute bottom-0 left-0 right-0 p-6 z-10 transition-opacity duration-300"
                                         style={{ opacity: isCurrent ? 1 : absR <= 1 ? 0.3 : 0 }}
                                     >
-                                        {isCurrent && (
-                                            <div className="flex items-center gap-4 flex-wrap">
-                                                <a href={course.id === 1 ? "https://modelolpcursoplenum.vercel.app/" : "#"} className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
-                                                    Ver Curso <ArrowRight className="w-3 h-3" />
-                                                </a>
-                                                <div className="flex items-center gap-3">
-                                                    <span className="inline-flex items-center gap-1.5 text-[11px] text-white/60">
-                                                        <Calendar className="w-3 h-3 text-[#C9A227]" />
-                                                        14 e 15 de maio
-                                                    </span>
-                                                    <span className="inline-flex items-center gap-1.5 text-[11px] text-white/60">
-                                                        <MapPin className="w-3 h-3 text-[#C9A227]" />
-                                                        Brasília | DF
-                                                    </span>
-                                                </div>
+                                        <div className="flex items-center mb-3">
+                                            <div className="flex -space-x-2">
+                                                {[1, 2, 3].map(j => (
+                                                    <div key={j} className="w-6 h-6 rounded-full bg-white/20 backdrop-blur border-2 border-white/30" />
+                                                ))}
                                             </div>
+                                            <span className="ml-2 text-[11px] text-white/70 font-medium">{course.students}</span>
+                                        </div>
+
+                                        <p className="text-[10px] text-white/60 uppercase tracking-widest font-semibold mb-1.5">
+                                            {course.category}
+                                        </p>
+                                        <h3 className="text-lg lg:text-xl font-display font-medium text-white mb-4 leading-tight">
+                                            {course.title}
+                                        </h3>
+
+                                        {isCurrent && (
+                                            <a href="#" className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase hover:bg-white/10 transition-all">
+                                                Ver Curso <ArrowRight className="w-3 h-3" />
+                                            </a>
                                         )}
                                     </div>
                                 </div>

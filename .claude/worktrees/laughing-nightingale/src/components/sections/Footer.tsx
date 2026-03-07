@@ -47,7 +47,7 @@ export default function Footer() {
     ];
 
     return (
-        <footer id="contato" ref={footerRef} className="footer relative bg-[#0D0D0D] overflow-hidden">
+        <footer ref={footerRef} className="footer relative bg-[#0D0D0D] overflow-hidden">
             {/* Newsletter CTA section — like HA newsletter */}
             <div className="relative py-24 lg:py-32 overflow-hidden">
                 <div className="absolute inset-0">
@@ -62,7 +62,9 @@ export default function Footer() {
                 <div className="relative z-10 max-w-[1320px] mx-auto px-6 lg:px-10">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div className="footer-content">
+                            <p className="text-sm text-white/50 font-medium mb-3 uppercase tracking-widest">/PLENUM™ Update</p>
                             <div className="flex items-center gap-3 mb-4">
+                                <SpinDecorationLarge />
                             </div>
                             <h3 className="text-display-md text-white mb-3 leading-snug">
                                 Receba as Novidades do Mundo<br />da Gestão Pública
@@ -105,13 +107,37 @@ export default function Footer() {
                 </div>
             </div>
 
+            {/* Giant branding + nav links — like HA footer */}
+            <div className="border-t border-white/[0.06]">
+                <div className="max-w-[1320px] mx-auto px-6 lg:px-10 py-16 lg:py-20">
+                    <div className="footer-content flex flex-col lg:flex-row justify-between items-start gap-12">
+                        {/* Giant /PLENUM™ branding — like /HUMAN™ */}
+                        <div>
+                            <SpinDecorationLarge />
+                            <h2 className="font-display font-light text-[clamp(3rem,7vw,6rem)] text-white tracking-tight leading-none mt-6">
+                                /PLENUM™
+                            </h2>
+                        </div>
+
+                        {/* Right nav links */}
+                        <nav className="flex flex-col gap-3 lg:text-right">
+                            {navLinks.map(link => (
+                                <a key={link} href="#" className="text-sm text-white/60 hover:text-white transition-colors uppercase tracking-wider font-medium">
+                                    {link}
+                                </a>
+                            ))}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
             {/* Link columns — like HA footer directory */}
             <div className="border-t border-white/[0.06]">
                 <div className="max-w-[1320px] mx-auto px-6 lg:px-10 py-14 lg:py-16">
                     <div className="footer-content grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16 mb-16">
                         {/* First column: Logo + description */}
                         <div className="col-span-2 md:col-span-1">
-                            <img src="/logo-plenum-aberta2.png" alt="Plenum Academy" className="h-8 w-auto object-contain" />
+                            <span className="text-lg font-display font-medium text-white tracking-wide">/P Academy™</span>
                             <p className="text-sm text-white/40 mt-4 leading-relaxed max-w-[240px]">
                                 Somos a maior escola de liderança e inovação para o setor público do Brasil.
                             </p>
