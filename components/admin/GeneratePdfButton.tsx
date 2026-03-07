@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FileText, Loader2, ExternalLink, CheckCircle } from 'lucide-react';
+import { FileText, Loader2, ExternalLink, CheckCircle, Upload } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface TurmaOption {
@@ -24,7 +24,7 @@ interface Props {
   courseId: string;
   /** Compact mode for dashboard row (inline) vs full mode for TabMidias */
   variant?: 'compact' | 'full';
-  /** Callback when PDF is generated */
+  /** Callback when PDF is generated and uploaded */
   onGenerated?: (url: string) => void;
 }
 
@@ -37,20 +37,19 @@ export default function GeneratePdfButton({
   const [selectedTurma, setSelectedTurma] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [loadingTurmas, setLoadingTurmas] = useState(false);
+  const [progress, setProgress] = useState<string>('');
+  const [uploadingStorage, setUploadingStorage] = useState(false);
   const [result, setResult] = useState<{ success: boolean; url?: string; error?: string } | null>(null);
   const [showSelector, setShowSelector] = useState(false);
 
-  // Get existing PDF URL for selected turma
   const selectedTurmaData = turmas.find((t) => t.id === selectedTurma);
   const existingPdfUrl = selectedTurmaData?.folder_pdf_url || null;
 
-  // Fetch turmas when selector is opened
   const fetchTurmas = async () => {
-    if (turmas.length > 0) return; // Already loaded
+    if (turmas.length > 0) return;
     setLoadingTurmas(true);
     try {
       const supabase = createClient();
-      // folder_pdf_url is a new column - cast to bypass stale generated types
       const { data } = await supabase
         .from('course_dates')
         .select('id, label, start_date, status, folder_pdf_url')
@@ -58,7 +57,6 @@ export default function GeneratePdfButton({
         .order('start_date', { ascending: false }) as { data: TurmaOption[] | null };
 
       setTurmas(data || []);
-      // Auto-select first open turma
       const firstOpen = data?.find((t) => t.status === 'open');
       if (firstOpen) setSelectedTurma(firstOpen.id);
       else if (data && data.length > 0) setSelectedTurma(data[0].id);
@@ -73,65 +71,91 @@ export default function GeneratePdfButton({
     if (!selectedTurma) return;
     setLoading(true);
     setResult(null);
+    setProgress('Iniciando...');
+    setUploadingStorage(false);
 
     try {
       const supabase = createClient();
 
-      // Force a session refresh to ensure we have a valid (non-expired) token
-      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-      let accessToken: string;
+      // ─── 1. Generate PDF in browser (no CPU limit!) ─────────────────
+      // Dynamic import keeps satori/resvg/pdf-lib out of the initial bundle
+      const { generateFolderPdf } = await import('@/lib/pdf-generator');
 
-      if (refreshError || !refreshData.session) {
-        console.warn('refreshSession failed, trying getSession...', refreshError?.message);
-        // Fallback: try cached session (may still work if not expired)
-        const { data: { session: cachedSession } } = await supabase.auth.getSession();
-        if (!cachedSession) {
-          throw new Error('Sessão expirada. Faça login novamente.');
-        }
-        accessToken = cachedSession.access_token;
+      const pdfBytes = await generateFolderPdf({
+        courseId,
+        courseDateId: selectedTurma,
+        supabase,
+        siteBaseUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://plenumbrasil.com.br',
+        onProgress: setProgress,
+      });
+
+      // ─── 2. Open PDF immediately in new tab ─────────────────────────
+      setProgress('Abrindo PDF...');
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, '_blank');
+
+      // Revoke after 60s to free memory
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+
+      // ─── 3. Upload to Supabase Storage in background ─────────────────
+      setLoading(false);
+      setUploadingStorage(true);
+      setProgress('Salvando no storage...');
+
+      const { data: courseData } = await supabase
+        .from('courses')
+        .select('slug')
+        .eq('id', courseId)
+        .single();
+
+      const slug = courseData?.slug || courseId.slice(0, 8);
+      const fileName = `folders/${slug}-${selectedTurma.slice(0, 8)}.pdf`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('pdfs')
+        .upload(fileName, pdfBytes, {
+          contentType: 'application/pdf',
+          upsert: true,
+        });
+
+      if (uploadErr) {
+        console.warn('[PDF] Storage upload failed (PDF still opened):', uploadErr.message);
+        setResult({ success: true, url: objectUrl });
+        setProgress('PDF aberto (upload falhou)');
+        onGenerated?.(objectUrl);
       } else {
-        accessToken = refreshData.session.access_token;
+        // Get public URL and update course_dates
+        const { data: { publicUrl } } = supabase.storage.from('pdfs').getPublicUrl(fileName);
+
+        await supabase
+          .from('course_dates')
+          .update({ folder_pdf_url: publicUrl } as any)
+          .eq('id', selectedTurma);
+
+        setTurmas((prev) =>
+          prev.map((t) =>
+            t.id === selectedTurma ? { ...t, folder_pdf_url: publicUrl } : t,
+          ),
+        );
+
+        setResult({ success: true, url: publicUrl });
+        setProgress('');
+        onGenerated?.(publicUrl);
       }
-
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/generate-folder-pdf`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            course_id: courseId,
-            course_date_id: selectedTurma,
-          }),
-        },
-      );
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Erro ao gerar PDF');
-      }
-
-      setResult({ success: true, url: data.url });
-
-      // Update local turma data with new PDF URL
-      setTurmas((prev) =>
-        prev.map((t) =>
-          t.id === selectedTurma ? { ...t, folder_pdf_url: data.url } : t,
-        ),
-      );
-
-      onGenerated?.(data.url);
     } catch (err) {
-      setResult({ success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' });
+      const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
+      setResult({ success: false, error: errorMsg });
+      setProgress('');
     } finally {
       setLoading(false);
+      setUploadingStorage(false);
     }
   };
 
-  // Compact variant: button that opens selector inline
+  const isWorking = loading || uploadingStorage;
+
+  // ─── Compact variant ─────────────────────────────────────
   if (variant === 'compact') {
     if (!showSelector) {
       return (
@@ -173,17 +197,18 @@ export default function GeneratePdfButton({
         <Button
           size="sm"
           onClick={handleGenerate}
-          disabled={loading || !selectedTurma || loadingTurmas}
+          disabled={isWorking || !selectedTurma || loadingTurmas}
         >
-          {loading ? (
+          {isWorking ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
             <FileText className="w-3.5 h-3.5" />
           )}
-          <span className="ml-1">{loading ? 'Gerando...' : existingPdfUrl ? 'Regerar' : 'Gerar'}</span>
+          <span className="ml-1">
+            {loading ? 'Gerando...' : uploadingStorage ? 'Salvando...' : existingPdfUrl ? 'Regerar' : 'Gerar'}
+          </span>
         </Button>
 
-        {/* Show existing or just-generated PDF link */}
         {(result?.success && result.url) || existingPdfUrl ? (
           <a
             href={result?.url || existingPdfUrl || '#'}
@@ -206,6 +231,7 @@ export default function GeneratePdfButton({
           onClick={() => {
             setShowSelector(false);
             setResult(null);
+            setProgress('');
           }}
         >
           ✕
@@ -214,8 +240,7 @@ export default function GeneratePdfButton({
     );
   }
 
-  // Full variant: for TabMidias
-  // Auto-fetch turmas on mount
+  // ─── Full variant (TabMidias) ─────────────────────────────
   useEffect(() => { fetchTurmas(); }, [courseId]);
 
   return (
@@ -241,16 +266,26 @@ export default function GeneratePdfButton({
 
         <Button
           onClick={handleGenerate}
-          disabled={loading || !selectedTurma}
+          disabled={isWorking || !selectedTurma}
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          ) : uploadingStorage ? (
+            <Upload className="w-4 h-4 mr-2" />
           ) : (
             <FileText className="w-4 h-4 mr-2" />
           )}
-          {loading ? 'Gerando PDF...' : existingPdfUrl ? 'Regerar Folder PDF' : 'Gerar Folder PDF'}
+          {loading ? 'Gerando PDF...' : uploadingStorage ? 'Salvando...' : existingPdfUrl ? 'Regerar Folder PDF' : 'Gerar Folder PDF'}
         </Button>
       </div>
+
+      {/* Progress indicator */}
+      {(loading || uploadingStorage) && progress && (
+        <div className="text-sm text-blue-600 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+          <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+          <span>{progress}</span>
+        </div>
+      )}
 
       {result?.error && (
         <div className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-lg p-3">
@@ -258,7 +293,6 @@ export default function GeneratePdfButton({
         </div>
       )}
 
-      {/* Show existing PDF for selected turma or just-generated */}
       {(result?.success && result.url) || existingPdfUrl ? (
         <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
           <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />
