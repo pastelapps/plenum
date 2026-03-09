@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import type { Testimonial } from '@/types/course';
+import ImageUploadField from '../ImageUploadField';
 
 interface Props {
   testimonials: Testimonial[];
@@ -62,24 +63,23 @@ export default function TabDepoimentos({ testimonials, setTestimonials }: Props)
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">YouTube ID</Label>
-                  <Input
-                    value={t.youtube_id}
-                    onChange={(e) => updateTestimonial(i, 'youtube_id', e.target.value)}
-                    placeholder="dQw4w9WgXcQ"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Thumbnail URL</Label>
-                  <Input
-                    value={t.thumbnail_url}
-                    onChange={(e) => updateTestimonial(i, 'thumbnail_url', e.target.value)}
-                    placeholder="/thumbnails/depoimento1.jpg"
-                  />
-                </div>
+              <div className="space-y-1">
+                <Label className="text-xs">YouTube ID</Label>
+                <Input
+                  value={t.youtube_id}
+                  onChange={(e) => updateTestimonial(i, 'youtube_id', e.target.value)}
+                  placeholder="dQw4w9WgXcQ"
+                />
               </div>
+              <ImageUploadField
+                label="Foto / Thumbnail"
+                value={t.thumbnail_url}
+                onChange={(url) => updateTestimonial(i, 'thumbnail_url', url)}
+                bucket="course-covers"
+                pathPrefix="testimonials/"
+                shape="square"
+                placeholder="URL da foto do depoente"
+              />
             </div>
           ))}
           {testimonials.length === 0 && (

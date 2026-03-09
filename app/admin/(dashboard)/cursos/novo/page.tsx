@@ -1,11 +1,9 @@
+import { Suspense } from 'react';
 import CourseForm from '@/components/admin/CourseForm';
-import { getDesignSystems, getInstructors } from '@/lib/actions/courses';
+import { getDesignSystems } from '@/lib/actions/courses';
 
 export default async function NewCoursePage() {
-  const [designSystems, instructors] = await Promise.all([
-    getDesignSystems(),
-    getInstructors(),
-  ]);
+  const designSystems = await getDesignSystems();
 
   return (
     <div className="space-y-6">
@@ -16,10 +14,11 @@ export default async function NewCoursePage() {
         </p>
       </div>
 
-      <CourseForm
-        designSystems={designSystems}
-        instructors={instructors}
-      />
+      <Suspense>
+        <CourseForm
+          designSystems={designSystems}
+        />
+      </Suspense>
     </div>
   );
 }

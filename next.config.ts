@@ -35,6 +35,14 @@ const nextConfig: NextConfig = {
         ignored: /.*/,
       };
     }
+
+    // Enable async WASM for @resvg/resvg-wasm (browser-side PDF generation)
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+      layers: true,
+    };
+
     return config;
   },
 };

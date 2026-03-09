@@ -2,7 +2,49 @@ import { createClient } from '@/lib/supabase/server';
 import type { CourseDate, CourseDateWithInstructor, Instructor } from '@/types/course';
 
 /**
- * Get all course dates for a specific course (with instructor data).
+ * Helper: bulk-fetch instructors by IDs and return a Map.
+ */
+async function fetchInstructorsMap(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  ids: string[]
+): Promise<Map<string, Instructor>> {
+  const map = new Map<string, Instructor>();
+  if (ids.length === 0) return map;
+
+  const { data } = await supabase
+    .from('instructors')
+    .select('*')
+    .in('id', ids);
+
+  for (const inst of (data || [])) {
+    map.set((inst as any).id, inst as unknown as Instructor);
+  }
+  return map;
+}
+
+/**
+ * Helper: attach instructors array to each course_date row.
+ */
+async function attachInstructors(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  dates: Record<string, unknown>[]
+): Promise<CourseDateWithInstructor[]> {
+  const allIds = [...new Set(
+    dates.flatMap((cd) => (cd.instructor_ids as string[]) || [])
+  )];
+
+  const instructorsMap = await fetchInstructorsMap(supabase, allIds);
+
+  return dates.map((cd) => ({
+    ...cd,
+    instructors: ((cd.instructor_ids as string[]) || [])
+      .map(id => instructorsMap.get(id))
+      .filter(Boolean) as Instructor[],
+  } as CourseDateWithInstructor));
+}
+
+/**
+ * Get all course dates for a specific course (with instructors data).
  * Returns dates sorted by sort_order then start_date.
  */
 export async function getCourseDates(courseId: string): Promise<CourseDateWithInstructor[]> {
@@ -20,23 +62,7 @@ export async function getCourseDates(courseId: string): Promise<CourseDateWithIn
     return [];
   }
 
-  // Fetch instructors for each date
-  const datesWithInstructors: CourseDateWithInstructor[] = await Promise.all(
-    dates.map(async (cd: Record<string, unknown>) => {
-      const { data: instructorData } = await supabase
-        .from('instructors')
-        .select('*')
-        .eq('id', cd.instructor_id as string)
-        .single();
-
-      return {
-        ...cd,
-        instructor: instructorData as unknown as Instructor,
-      } as CourseDateWithInstructor;
-    })
-  );
-
-  return datesWithInstructors;
+  return attachInstructors(supabase, dates as Record<string, unknown>[]);
 }
 
 /**
@@ -60,22 +86,7 @@ export async function getOpenCourseDates(courseId: string): Promise<CourseDateWi
     return [];
   }
 
-  const datesWithInstructors: CourseDateWithInstructor[] = await Promise.all(
-    dates.map(async (cd: Record<string, unknown>) => {
-      const { data: instructorData } = await supabase
-        .from('instructors')
-        .select('*')
-        .eq('id', cd.instructor_id as string)
-        .single();
-
-      return {
-        ...cd,
-        instructor: instructorData as unknown as Instructor,
-      } as CourseDateWithInstructor;
-    })
-  );
-
-  return datesWithInstructors;
+  return attachInstructors(supabase, dates as Record<string, unknown>[]);
 }
 
 /**
@@ -92,4 +103,22 @@ export async function getCourseDateById(id: string): Promise<CourseDate | null> 
 
   if (error) return null;
   return data as unknown as CourseDate;
+}
+
+/**
+ * Get a single course date with its instructors (for turma edit page).
+ */
+export async function getCourseDateWithInstructors(id: string): Promise<CourseDateWithInstructor | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('course_dates')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) return null;
+
+  const results = await attachInstructors(supabase, [data as Record<string, unknown>]);
+  return results[0] || null;
 }

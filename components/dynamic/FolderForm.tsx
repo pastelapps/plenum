@@ -4,13 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Download, CheckCircle2 } from 'lucide-react';
+import { useTurma } from '@/hooks/use-turma';
 
 gsap.registerPlugin(ScrollTrigger);
 
 // ─── Props ─────────────────────────────────────────────
 export interface FolderFormProps {
   courseId: string;
-  courseDateId?: string | null;
   pdfUrl?: string | null;
   backgroundImageUrl?: string;
   heading?: string;
@@ -21,13 +21,13 @@ export interface FolderFormProps {
 // ─── Component ────────────────────────────────────────
 export default function FolderForm({
   courseId,
-  courseDateId,
   pdfUrl,
   backgroundImageUrl = '/fundodepo.png',
   heading = 'Baixe o Folder',
   headingSecondary = 'Completo do Evento',
   subtitle = 'Tenha acesso a programação detalhada, currículo completo dos palestrantes e informações sobre o investimento.',
 }: FolderFormProps) {
+  const { courseDateId } = useTurma();
   const sectionRef = useRef<HTMLElement>(null);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
@@ -38,6 +38,11 @@ export default function FolderForm({
     cidade: '',
     orgao: '',
   });
+
+  // Reset form state when turma changes
+  useEffect(() => {
+    setSubmitted(false);
+  }, [courseDateId]);
 
   useEffect(() => {
     if (!sectionRef.current) return;

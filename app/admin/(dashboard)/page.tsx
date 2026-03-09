@@ -1,32 +1,17 @@
-import { getAllCourses } from '@/lib/queries/courses';
-import { Badge } from '@/components/ui/badge';
+import { getAllCoursesWithDates } from '@/lib/queries/courses';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Plus, ExternalLink, Pencil } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Link from 'next/link';
-
-const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  published: { label: 'Publicado', variant: 'default' },
-  draft: { label: 'Rascunho', variant: 'secondary' },
-  archived: { label: 'Arquivado', variant: 'outline' },
-};
-
-const modalityMap: Record<string, string> = {
-  presencial: 'Presencial',
-  online: 'Online',
-  hibrido: 'Híbrido',
-};
+import CourseDashboardTable from '@/components/admin/CourseDashboardTable';
 
 export default async function AdminDashboardPage() {
-  const courses = await getAllCourses();
+  const courses = await getAllCoursesWithDates();
+
+  const totalTurmas = courses.reduce((acc, c) => acc + c.dates_preview.length, 0);
+  const openTurmas = courses.reduce(
+    (acc, c) => acc + c.dates_preview.filter((d) => d.status === 'open').length,
+    0
+  );
 
   return (
     <div className="space-y-6">
@@ -34,7 +19,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-500 mt-1">
-            {courses.length} curso{courses.length !== 1 ? 's' : ''} cadastrado{courses.length !== 1 ? 's' : ''}
+            {courses.length} curso{courses.length !== 1 ? 's' : ''} • {openTurmas} turma{openTurmas !== 1 ? 's' : ''} aberta{openTurmas !== 1 ? 's' : ''} de {totalTurmas}
           </p>
         </div>
         <Button asChild>
@@ -45,75 +30,7 @@ export default async function AdminDashboardPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Cursos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {courses.length === 0 ? (
-            <p className="text-sm text-gray-500 py-8 text-center">
-              Nenhum curso cadastrado. Clique em &quot;Novo Curso&quot; para começar.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Modalidade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Atualizado</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {courses.map((course) => {
-                  const status = statusMap[course.status] || statusMap.draft;
-                  return (
-                    <TableRow key={course.id}>
-                      <TableCell className="font-medium max-w-[250px] truncate">
-                        {course.title}
-                      </TableCell>
-                      <TableCell className="text-gray-500 text-sm font-mono">
-                        {course.slug}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {modalityMap[course.modality] || course.modality}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={status.variant}>{status.label}</Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-500">
-                        {new Date(course.updated_at).toLocaleDateString('pt-BR')}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/admin/cursos/${course.id}`}>
-                              <Pencil className="w-4 h-4" />
-                            </Link>
-                          </Button>
-                          {course.status === 'published' && (
-                            <Button variant="ghost" size="sm" asChild>
-                              <a
-                                href={`/cursos/${course.slug}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <ExternalLink className="w-4 h-4" />
-                              </a>
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+      <CourseDashboardTable courses={courses} />
     </div>
   );
 }

@@ -47,20 +47,32 @@ export async function getCourseBySlug(slug: string): Promise<CourseWithRelations
     .order('sort_order', { ascending: true })
     .order('start_date', { ascending: true });
 
-  // 4. For each course_date, fetch the instructor
-  const datesWithInstructors: CourseDateWithInstructor[] = await Promise.all(
-    (courseDatesData || []).map(async (cd: Record<string, unknown>) => {
-      const { data: instructorData } = await supabase
-        .from('instructors')
-        .select('*')
-        .eq('id', cd.instructor_id as string)
-        .single();
+  // 4. Collect all instructor IDs and bulk-fetch
+  const allInstructorIds = [...new Set(
+    (courseDatesData || []).flatMap((cd: Record<string, unknown>) =>
+      (cd.instructor_ids as string[]) || []
+    )
+  )];
 
-      return {
-        ...cd,
-        instructor: instructorData as unknown as Instructor,
-      } as CourseDateWithInstructor;
-    })
+  const instructorsMap = new Map<string, Instructor>();
+  if (allInstructorIds.length > 0) {
+    const { data: instructorsData } = await supabase
+      .from('instructors')
+      .select('*')
+      .in('id', allInstructorIds);
+    for (const inst of (instructorsData || [])) {
+      instructorsMap.set((inst as any).id, inst as unknown as Instructor);
+    }
+  }
+
+  // 5. Map instructors to dates
+  const datesWithInstructors: CourseDateWithInstructor[] = (courseDatesData || []).map(
+    (cd: Record<string, unknown>) => ({
+      ...cd,
+      instructors: ((cd.instructor_ids as string[]) || [])
+        .map(id => instructorsMap.get(id))
+        .filter(Boolean) as Instructor[],
+    } as CourseDateWithInstructor)
   );
 
   return {
@@ -107,6 +119,91 @@ export async function getAllCourses(): Promise<Course[]> {
   }
 
   return (data || []) as unknown as Course[];
+}
+
+/**
+ * Get all courses with their course_dates count + status summary.
+ * Used by the admin dashboard for the expandable turma view.
+ */
+export async function getAllCoursesWithDates(): Promise<CourseWithDatesPreview[]> {
+  const supabase = await createClient();
+
+  // 1. Fetch all courses
+  const { data: courses, error: coursesError } = await supabase
+    .from('courses')
+    .select('*')
+    .order('updated_at', { ascending: false });
+
+  if (coursesError || !courses) {
+    console.error('Error fetching courses with dates:', coursesError);
+    return [];
+  }
+
+  // 2. Fetch all course_dates (no FK join — instructor_ids is an array)
+  const { data: allDates } = await supabase
+    .from('course_dates')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('start_date', { ascending: true });
+
+  // 3. Collect all instructor IDs and bulk-fetch names
+  const allInstructorIds = [...new Set(
+    (allDates || []).flatMap((d: Record<string, unknown>) =>
+      (d.instructor_ids as string[]) || []
+    )
+  )];
+
+  const instructorNamesMap = new Map<string, string>();
+  if (allInstructorIds.length > 0) {
+    const { data: instructorsData } = await supabase
+      .from('instructors')
+      .select('id, name')
+      .in('id', allInstructorIds);
+    for (const inst of (instructorsData || [])) {
+      instructorNamesMap.set((inst as any).id, (inst as any).name);
+    }
+  }
+
+  const datesMap = new Map<string, CourseDatePreview[]>();
+  for (const d of (allDates || [])) {
+    const courseId = d.course_id as string;
+    if (!datesMap.has(courseId)) datesMap.set(courseId, []);
+    const ids = (d.instructor_ids as string[]) || [];
+    datesMap.get(courseId)!.push({
+      id: d.id as string,
+      label: (d.label as string) || '',
+      start_date: d.start_date as string,
+      end_date: d.end_date as string,
+      status: d.status as string,
+      location_venue: (d.location_venue as string) || '',
+      instructor_names: ids.length > 0
+        ? ids.map(id => instructorNamesMap.get(id) || 'Sem instrutor')
+        : ['Sem instrutor'],
+      max_students: d.max_students as number | null,
+    });
+  }
+
+  return (courses as unknown as Course[]).map((course) => ({
+    ...course,
+    dates_preview: datesMap.get(course.id) || [],
+  }));
+}
+
+/** Lightweight turma preview for dashboard */
+export interface CourseDatePreview {
+  id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  location_venue: string;
+  instructor_names: string[];
+  max_students: number | null;
+}
+
+/** Course with lightweight dates for dashboard */
+export interface CourseWithDatesPreview extends Course {
+  dates_preview: CourseDatePreview[];
 }
 
 /**

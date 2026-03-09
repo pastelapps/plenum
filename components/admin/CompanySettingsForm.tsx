@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Save, Plus, Trash2 } from 'lucide-react';
 import { updateCompanySettings } from '@/lib/actions/company';
 import type { CompanySettings, PhoneEntry, EmailEntry } from '@/types/company';
+import ImageUploadField from './ImageUploadField';
 
 interface Props {
   company: CompanySettings;
@@ -107,14 +108,24 @@ export default function CompanySettingsForm({ company }: Props) {
           <CardTitle>Logos</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Logo (fundo escuro)</Label>
-            <Input value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="/logo.png" />
-          </div>
-          <div className="space-y-2">
-            <Label>Logo (fundo claro)</Label>
-            <Input value={logoDarkUrl} onChange={(e) => setLogoDarkUrl(e.target.value)} placeholder="/logo-dark.svg" />
-          </div>
+          <ImageUploadField
+            label="Logo (fundo escuro)"
+            value={logoUrl}
+            onChange={setLogoUrl}
+            bucket="course-covers"
+            pathPrefix="company/"
+            shape="wide"
+            placeholder="/logo.png ou URL completa"
+          />
+          <ImageUploadField
+            label="Logo (fundo claro)"
+            value={logoDarkUrl}
+            onChange={setLogoDarkUrl}
+            bucket="course-covers"
+            pathPrefix="company/"
+            shape="wide"
+            placeholder="/logo-dark.svg ou URL completa"
+          />
         </CardContent>
       </Card>
 

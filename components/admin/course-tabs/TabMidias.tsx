@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Upload, ImageIcon, X } from 'lucide-react';
+import { Plus, Trash2, Upload, ImageIcon, X, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { PartnerLogo } from '@/types/course';
+import GeneratePdfButton from '../GeneratePdfButton';
+import ImageUploadField from '../ImageUploadField';
 
 interface Props {
   partnerLogos: PartnerLogo[];
@@ -19,6 +21,7 @@ interface Props {
   folderBgUrl: string;
   setFolderBgUrl: (v: string) => void;
   courseSlug: string;
+  courseId?: string;
 }
 
 export default function TabMidias({
@@ -27,6 +30,7 @@ export default function TabMidias({
   coverImageUrl, setCoverImageUrl,
   folderBgUrl, setFolderBgUrl,
   courseSlug,
+  courseId,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderBgInputRef = useRef<HTMLInputElement>(null);
@@ -193,36 +197,40 @@ export default function TabMidias({
             Logos exibidos na seção de parceiros/apoiadores da landing page.
           </p>
           {partnerLogos.map((logo, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Input
-                value={logo.name}
-                onChange={(e) => updateLogo(i, 'name', e.target.value)}
-                placeholder="Nome"
-                className="w-36"
-              />
-              <Input
+            <div key={i} className="p-3 rounded-lg border bg-gray-50 space-y-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={logo.name}
+                  onChange={(e) => updateLogo(i, 'name', e.target.value)}
+                  placeholder="Nome do parceiro"
+                  className="flex-1"
+                />
+                <Input
+                  value={logo.width || ''}
+                  onChange={(e) => updateLogo(i, 'width', e.target.value ? parseInt(e.target.value) : 0)}
+                  placeholder="W"
+                  className="w-16"
+                  type="number"
+                />
+                <Input
+                  value={logo.height || ''}
+                  onChange={(e) => updateLogo(i, 'height', e.target.value ? parseInt(e.target.value) : 0)}
+                  placeholder="H"
+                  className="w-16"
+                  type="number"
+                />
+                <Button variant="ghost" size="sm" onClick={() => removeLogo(i)}>
+                  <Trash2 className="w-4 h-4 text-red-500" />
+                </Button>
+              </div>
+              <ImageUploadField
                 value={logo.url}
-                onChange={(e) => updateLogo(i, 'url', e.target.value)}
-                placeholder="URL da imagem"
-                className="flex-1"
+                onChange={(url) => updateLogo(i, 'url', url)}
+                bucket="course-covers"
+                pathPrefix={`partners/${courseSlug || 'logo'}-`}
+                shape="wide"
+                placeholder="URL da imagem do logo"
               />
-              <Input
-                value={logo.width || ''}
-                onChange={(e) => updateLogo(i, 'width', e.target.value ? parseInt(e.target.value) : 0)}
-                placeholder="W"
-                className="w-16"
-                type="number"
-              />
-              <Input
-                value={logo.height || ''}
-                onChange={(e) => updateLogo(i, 'height', e.target.value ? parseInt(e.target.value) : 0)}
-                placeholder="H"
-                className="w-16"
-                type="number"
-              />
-              <Button variant="ghost" size="sm" onClick={() => removeLogo(i)}>
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </Button>
             </div>
           ))}
           {partnerLogos.length === 0 && (
@@ -308,19 +316,31 @@ export default function TabMidias({
 
       <Card>
         <CardHeader>
-          <CardTitle>Folder PDF</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Folder PDF
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <p className="text-xs text-gray-500">
+            Gere automaticamente o PDF do folder a partir dos dados do curso, ou cole uma URL manualmente.
+          </p>
+
+          {courseId && (
+            <GeneratePdfButton
+              courseId={courseId}
+              variant="full"
+              onGenerated={(url) => setFolderPdfUrl(url)}
+            />
+          )}
+
           <div className="space-y-2">
-            <Label>URL do Folder PDF</Label>
+            <Label>URL do Folder PDF (manual)</Label>
             <Input
               value={folderPdfUrl}
               onChange={(e) => setFolderPdfUrl(e.target.value)}
               placeholder="https://storage.supabase.co/.../folder.pdf"
             />
-            <p className="text-xs text-gray-500">
-              URL do PDF gerado ou enviado. Este PDF é enviado para leads que preenchem o formulário de folder.
-            </p>
           </div>
         </CardContent>
       </Card>

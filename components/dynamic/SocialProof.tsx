@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Play, X, CheckCircle2, ArrowRight, CreditCard, Info, Building2, MapPin, Phone, Globe, Mail, FileText, ChevronDown } from 'lucide-react';
 import Grainient from '@/components/Grainient';
 import { Button } from '@/components/ui/neon-button';
@@ -8,13 +8,13 @@ import { cn } from '@/lib/utils';
 import type { Testimonial } from '@/types/course';
 import type { CompanySettings } from '@/types/company';
 import type { ShaderColors } from '@/types/design-system';
+import { useTurma } from '@/hooks/use-turma';
 
 // ─── Props ─────────────────────────────────────────────
 export interface SocialProofProps {
   testimonials: Testimonial[];
   company: CompanySettings;
   courseId?: string;
-  courseDateId?: string | null;
   whatsappUrl?: string;
   grainientColors?: ShaderColors['grainient'];
 }
@@ -24,16 +24,21 @@ export default function SocialProof({
   testimonials,
   company,
   courseId,
-  courseDateId,
   whatsappUrl = 'https://wa.me/553125311776',
   grainientColors = ['#030d1f', '#378bae', '#030d1f'] as [string, string, string],
 }: SocialProofProps) {
+  const { courseDateId } = useTurma();
   const [position, setPosition] = useState(Math.min(3, testimonials.length));
   const [playingVideoId, setPlayingVideoId] = useState<number | null>(null);
   const [ctaSubmitted, setCtaSubmitted] = useState(false);
   const [ctaForm, setCtaForm] = useState({ nome: '', email: '', orgao: '', whatsapp: '' });
   const [openCancelamento, setOpenCancelamento] = useState(false);
   const [openEmpresa, setOpenEmpresa] = useState(false);
+
+  // Reset form state when turma changes
+  useEffect(() => {
+    setCtaSubmitted(false);
+  }, [courseDateId]);
 
   const handleCtaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCtaForm({ ...ctaForm, [e.target.name]: e.target.value });

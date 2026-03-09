@@ -1,44 +1,37 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckCircle2, Clock, ChevronUp } from 'lucide-react';
 import ColorBends from '@/components/ColorBends';
-import type { ProgramDay } from '@/types/course';
 import type { ShaderColors } from '@/types/design-system';
+import { useTurma } from '@/hooks/use-turma';
 
 // ─── Props ─────────────────────────────────────────────
 export interface ProgramProps {
-  days: ProgramDay[];
   heading?: string;
   description?: string;
   shaderColors?: ShaderColors['colorbends'];
 }
 
-// ─── Defaults ──────────────────────────────────────────
-const defaultDays: ProgramDay[] = [
-  {
-    tag: 'Dia 1 — Terça, 10/03',
-    time: '14:00 às 18:00',
-    title: 'Credenciamento e Entrega de Materiais',
-    description: 'Recepção dos participantes, credenciamento, entrega de material didático e orientações iniciais sobre a dinâmica do curso.',
-    topics: [
-      { text: 'Credenciamento e recepção dos participantes', children: [] },
-      { text: 'Entrega de material de apoio personalizado', children: [] },
-      { text: 'Orientações sobre a dinâmica e objetivos do curso', children: [] },
-    ],
-  },
-];
-
 // ─── Component ────────────────────────────────────────
 export default function Program({
-  days = defaultDays,
   heading = 'Programação',
   description = '4 dias de imersão presencial em Brasília/DF. Carga horária total de 12 horas-aula.',
   shaderColors = ['#007bff', '#4097bf'] as [string, string],
 }: ProgramProps) {
+  const { programDays, courseDateId } = useTurma();
+
   const [openSet, setOpenSet] = useState<Set<number>>(
-    new Set(days.map((_, i) => i))
+    new Set(programDays.map((_, i) => i))
   );
+
+  // Reset accordion state when turma changes (programDays comes from a different course_date)
+  useEffect(() => {
+    setOpenSet(new Set(programDays.map((_, i) => i)));
+  }, [courseDateId]);
+
+  // If no program days, don't render
+  if (programDays.length === 0) return null;
 
   return (
     <section id="programacao" className="pt-[66px] pb-10 md:pb-14 px-6 md:px-12 bg-[var(--ds-background)] relative overflow-hidden">
@@ -70,12 +63,12 @@ export default function Program({
 
         {/* ── List ── */}
         <div className="flex flex-col gap-4">
-          {days.map((day, i) => {
+          {programDays.map((day, i) => {
             const isOpen = openSet.has(i);
 
             return (
               <div
-                key={i}
+                key={`${day.tag}-${i}`}
                 className="rounded-2xl transition-all duration-300 backdrop-blur-md border"
                 style={{
                   background: `linear-gradient(to bottom right, var(--ds-primary-8), var(--ds-primary-4))`,
