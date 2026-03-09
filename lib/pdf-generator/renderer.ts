@@ -1,7 +1,7 @@
 import { PAGE_W, PAGE_H, PDF_W, PDF_H, type SatoriNode, type FontData } from './types';
 
 // Render at ~37% of satori width — acceptable quality for digital brochures.
-// 465px ≈ 56 DPI in a 595-point PDF. Area ∝ width², so 465 vs 1240 = ~14% pixel area.
+// 465px ≈ 56 DPI in a 595-point PDF.
 const RENDER_W = 465;
 
 // Lazy-loaded module references (avoids SSR issues in Next.js)
@@ -13,14 +13,26 @@ async function getResvg() {
     resvgMod = await import('@resvg/resvg-wasm');
   }
   if (!resvgWasmInitialized) {
-    const wasmUrl = 'https://unpkg.com/@resvg/resvg-wasm@2.6.2/index_bg.wasm';
-    const wasmRes = await fetch(wasmUrl);
-    if (!wasmRes.ok) throw new Error(`resvg WASM fetch failed: HTTP ${wasmRes.status}`);
-    const wasmBuf = await wasmRes.arrayBuffer();
-    console.log(`[PDF Renderer] resvg WASM: ${(wasmBuf.byteLength / 1024 / 1024).toFixed(1)}MB`);
-    await resvgMod.initWasm(wasmBuf);
+    try {
+      // Load WASM from our local public/ directory (fastest, no CDN dependency)
+      // File: public/resvg.wasm — copied from node_modules/@resvg/resvg-wasm/index_bg.wasm
+      const wasmRes = await fetch('/resvg.wasm');
+      if (!wasmRes.ok) throw new Error(`HTTP ${wasmRes.status}`);
+      const wasmBuf = await wasmRes.arrayBuffer();
+      console.log(`[PDF Renderer] resvg WASM: ${(wasmBuf.byteLength / 1024 / 1024).toFixed(1)}MB`);
+      await resvgMod.initWasm(wasmBuf);
+      console.log('[PDF Renderer] resvg WASM ready');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // "Already initialized" means HMR reloaded this module but resvg WASM
+      // module is still cached. Safe to proceed.
+      if (msg.includes('Already initialized')) {
+        console.log('[PDF Renderer] resvg WASM already initialized (HMR)');
+      } else {
+        throw new Error(`Failed to load resvg WASM: ${msg}`);
+      }
+    }
     resvgWasmInitialized = true;
-    console.log('[PDF Renderer] resvg WASM ready');
   }
   return resvgMod;
 }
