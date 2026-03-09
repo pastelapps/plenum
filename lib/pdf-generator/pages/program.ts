@@ -1,16 +1,16 @@
 import { h, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode, type ProgramDay } from '../types';
 import { getFontFamily } from '../fonts';
-import { getCheckIcon } from '../icons';
+import { getIcon } from '../icons';
 import type { FontData } from '../types';
 
-const MAX_DAYS_PER_PAGE = 2;
+/** One day per page — matches reference PDF layout */
+const MAX_DAYS_PER_PAGE = 1;
 
 export function renderProgram(ctx: PdfContext, fonts: FontData[]): SatoriNode[] {
-  const { courseDate, instructors, ds } = ctx;
+  const { courseDate, ds } = ctx;
   const heading = getFontFamily(ds, 'heading', fonts);
-  const body = getFontFamily(ds, 'body', fonts);
+  const body    = getFontFamily(ds, 'body', fonts);
   const primary = ds.color_primary;
-  const instructor = instructors[0];
 
   const days = courseDate.program_days || [];
   if (days.length === 0) return [];
@@ -18,22 +18,16 @@ export function renderProgram(ctx: PdfContext, fonts: FontData[]): SatoriNode[] 
   const pages: SatoriNode[] = [];
   for (let i = 0; i < days.length; i += MAX_DAYS_PER_PAGE) {
     const chunk = days.slice(i, i + MAX_DAYS_PER_PAGE);
-    const isFirstPage = i === 0;
-    pages.push(_programPage(chunk, isFirstPage, instructor, heading, body, primary, ds, ctx));
+    pages.push(_programPage(chunk, heading, body, primary));
   }
-
   return pages;
 }
 
 function _programPage(
   days: ProgramDay[],
-  showInstructor: boolean,
-  instructor: { name: string; role: string | null; photo_url: string | null } | undefined,
   heading: string,
   body: string,
   primary: string,
-  ds: { color_surface: string },
-  ctx: PdfContext,
 ): SatoriNode {
   return h('div', {
     style: {
@@ -45,127 +39,160 @@ function _programPage(
       padding: PAD,
     },
   },
-    showInstructor && instructor
-      ? h('div', {
-          style: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            padding: '16px 24px',
-            borderRadius: 16,
-            backgroundColor: '#f8f9fa',
-            border: `1px solid ${primary}22`,
-            marginBottom: 24,
-          },
+
+    // ── Breadcrumb label ─────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        fontSize: 11,
+        fontFamily: body,
+        color: '#aaaaaa',
+        textTransform: 'uppercase',
+        letterSpacing: 4,
+        marginBottom: 24,
+      },
+    }, 'Programação'),
+
+    // ── Days ─────────────────────────────────────────────
+    ...days.map((day, idx) =>
+      h('div', {
+        style: {
+          display: 'flex',
+          flexDirection: 'column',
+          marginBottom: idx < days.length - 1 ? 52 : 0,
         },
-          instructor.photo_url
-            ? h('img', {
-                src: ctx.imageCache.get(instructor.photo_url) ??
-                  (instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url),
-                width: 56,
-                height: 56,
-                style: { borderRadius: '50%', objectFit: 'cover' },
-              })
-            : h('div', {
-                style: {
-                  width: 56,
-                  height: 56,
-                  borderRadius: '50%',
-                  backgroundColor: primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: '#ffffff',
-                  fontFamily: heading,
-                },
-              }, instructor.name.charAt(0)),
-          h('div', { style: { display: 'flex', flexDirection: 'column' } },
-            h('span', { style: { fontSize: 18, fontFamily: heading, fontWeight: 700, color: '#1a1a1a' } }, instructor.name),
-            instructor.role
-              ? h('span', { style: { fontSize: 13, fontFamily: body, color: '#666666' } }, instructor.role)
-              : null,
-          ),
-        )
-      : null,
+      },
 
-    showInstructor
-      ? h('div', {
-          style: {
-            display: 'flex',
-            fontSize: 36,
-            fontFamily: heading,
-            fontWeight: 700,
-            color: primary,
-            marginBottom: 24,
-            borderBottom: `3px solid ${primary}`,
-            paddingBottom: 12,
-          },
-        }, 'Programação')
-      : null,
-
-    ...days.map((day) =>
-      h('div', { style: { display: 'flex', flexDirection: 'column', marginBottom: 28 } },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 } },
+        // Day badge + time row
+        h('div', {
+          style: { display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 20 },
+        },
           h('span', {
             style: {
-              fontSize: 14,
+              display: 'flex',
+              fontSize: 13,
               fontFamily: body,
-              fontWeight: 600,
+              fontWeight: 700,
               color: '#ffffff',
               backgroundColor: primary,
-              padding: '6px 14px',
-              borderRadius: 8,
+              padding: '7px 18px',
+              borderRadius: 6,
+              letterSpacing: 1,
             },
           }, day.tag),
-          h('span', { style: { fontSize: 14, fontFamily: body, color: '#888888' } }, day.time),
+          day.time
+            ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                getIcon('Clock', 16, '#999999'),
+                h('span', { style: { fontSize: 14, fontFamily: body, color: '#999999' } }, day.time),
+              )
+            : null,
         ),
 
+        // Day title — large and bold (main typography fix)
         h('div', {
           style: {
             display: 'flex',
-            fontSize: 22,
+            fontSize: 64,
             fontFamily: heading,
-            fontWeight: 700,
+            fontWeight: 800,
             color: '#1a1a1a',
-            marginBottom: 8,
-            marginTop: 8,
+            lineHeight: 1.05,
+            marginBottom: 14,
           },
         }, day.title),
 
+        // Day description
         day.description
           ? h('div', {
               style: {
                 display: 'flex',
-                fontSize: 14,
+                fontSize: 17,
                 fontFamily: body,
-                color: '#555555',
-                marginBottom: 12,
-                lineHeight: 1.4,
+                color: '#666666',
+                lineHeight: 1.55,
+                marginBottom: 14,
               },
             }, day.description)
           : null,
 
-        ...day.topics.map((topic) =>
-          h('div', { style: { display: 'flex', flexDirection: 'column', marginBottom: 8 } },
-            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10 } },
-              getCheckIcon(20, primary),
+        // Accent line
+        h('div', {
+          style: {
+            width: 44,
+            height: 4,
+            backgroundColor: primary,
+            borderRadius: 2,
+            marginBottom: 32,
+          },
+        }),
+
+        // Topic group cards
+        h('div', {
+          style: { display: 'flex', flexDirection: 'column', gap: 18 },
+        },
+          ...day.topics.map((topic) =>
+            h('div', {
+              style: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                padding: '22px 28px',
+                borderRadius: 12,
+                backgroundColor: '#f7f8fa',
+                border: `1px solid ${primary}22`,
+              },
+            },
+              // Topic title
               h('span', {
-                style: { fontSize: 15, fontFamily: body, fontWeight: 600, color: '#1a1a1a', lineHeight: 1.3 },
+                style: {
+                  fontSize: 17,
+                  fontFamily: heading,
+                  fontWeight: 700,
+                  color: '#1a1a1a',
+                },
               }, topic.text),
-            ),
-            ...(topic.children || []).map((child) =>
-              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginLeft: 30, marginTop: 4 } },
-                h('div', {
-                  style: { width: 6, height: 6, borderRadius: '50%', backgroundColor: primary, marginTop: 6, flexShrink: 0 },
-                }),
-                h('span', { style: { fontSize: 13, fontFamily: body, color: '#444444', lineHeight: 1.3 } }, child),
+
+              // Bullet children
+              ...(topic.children || []).map((child) =>
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 11 } },
+                  h('div', {
+                    style: {
+                      width: 7,
+                      height: 7,
+                      borderRadius: '50%',
+                      backgroundColor: primary,
+                      flexShrink: 0,
+                      marginTop: 7,
+                    },
+                  }),
+                  h('span', {
+                    style: { fontSize: 14, fontFamily: body, color: '#555555', lineHeight: 1.45 },
+                  }, child),
+                ),
               ),
             ),
           ),
         ),
       ),
+    ),
+
+    // ── Footer ───────────────────────────────────────────
+    h('div', { style: { flexGrow: 1, display: 'flex', minHeight: 16 } }),
+    h('div', {
+      style: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        paddingTop: 16,
+        borderTop: `1px solid #e8e8e8`,
+        fontSize: 11,
+        fontFamily: body,
+        color: '#cccccc',
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+      },
+    },
+      h('span', {}, days[0]?.tag || ''),
+      h('span', {}, ''),
     ),
   );
 }

@@ -1,4 +1,4 @@
-import { h, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
+import { h, getImageSrc, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
 import { getFontFamily } from '../fonts';
 import type { FontData } from '../types';
 
@@ -30,10 +30,9 @@ export function renderCover(ctx: PdfContext, fonts: FontData[]): SatoriNode {
       position: 'relative',
     },
   },
-    company.logo_url
+    getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl)
       ? h('img', {
-          src: ctx.imageCache.get(company.logo_url) ??
-            (company.logo_url.startsWith('/') ? `${ctx.siteBaseUrl}${company.logo_url}` : company.logo_url),
+          src: getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl)!,
           width: 280,
           height: 80,
           style: { objectFit: 'contain', alignSelf: 'center', marginTop: 30 },
@@ -79,12 +78,12 @@ export function renderCover(ctx: PdfContext, fonts: FontData[]): SatoriNode {
       ...titleParts.map((part) =>
         h('span', {
           style: {
-            fontSize: 52,
+            fontSize: 64,
             fontFamily: heading,
-            fontWeight: 700,
+            fontWeight: 800,
             color: part.color === 'accent' ? accent : '#ffffff',
             textAlign: 'center',
-            lineHeight: 1.15,
+            lineHeight: 1.1,
           },
         }, part.text),
       ),
@@ -112,50 +111,58 @@ export function renderCover(ctx: PdfContext, fonts: FontData[]): SatoriNode {
       ? h('div', {
           style: {
             display: 'flex',
+            flexDirection: 'row',
             alignItems: 'center',
-            gap: 20,
+            gap: 40,
             alignSelf: 'center',
-            padding: '16px 32px',
-            borderRadius: 16,
-            backgroundColor: `${ds.color_surface}cc`,
-            border: `1px solid ${ds.color_primary}33`,
-            marginBottom: 40,
+            padding: '28px 44px',
+            borderRadius: 20,
+            backgroundColor: `${ds.color_surface}bb`,
+            border: `1px solid ${primary}33`,
+            marginBottom: 32,
           },
         },
-          instructor.photo_url
+          // Large portrait photo — square, no circle clip
+          getImageSrc(ctx.imageCache, instructor.photo_url, ctx.siteBaseUrl)
             ? h('img', {
-                src: ctx.imageCache.get(instructor.photo_url) ??
-                  (instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url),
-                width: 72,
-                height: 72,
-                style: { borderRadius: '50%', objectFit: 'cover' },
+                src: getImageSrc(ctx.imageCache, instructor.photo_url, ctx.siteBaseUrl)!,
+                width: 260,
+                height: 310,
+                style: { borderRadius: 12, objectFit: 'cover', flexShrink: 0 },
               })
             : h('div', {
                 style: {
-                  width: 72,
-                  height: 72,
-                  borderRadius: '50%',
+                  width: 260,
+                  height: 310,
+                  borderRadius: 12,
                   backgroundColor: primary,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: 28,
+                  fontSize: 100,
                   fontFamily: heading,
                   fontWeight: 700,
                   color: '#ffffff',
+                  flexShrink: 0,
                 },
               }, instructor.name.charAt(0)),
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
+          // Name + role — large and expressive
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 520 } },
             h('span', {
-              style: { fontSize: 12, fontFamily: body, color: '#ffffff88', textTransform: 'uppercase', letterSpacing: 2 },
+              style: { fontSize: 13, fontFamily: body, color: '#ffffff55', textTransform: 'uppercase', letterSpacing: 3 },
             }, 'Palestrante'),
             h('span', {
-              style: { fontSize: 22, fontFamily: heading, fontWeight: 700, color: '#ffffff' },
+              style: { fontSize: 52, fontFamily: heading, fontWeight: 800, color: '#ffffff', lineHeight: 1.1 },
             }, instructor.name),
             instructor.role
               ? h('span', {
-                  style: { fontSize: 14, fontFamily: body, color: '#ffffffaa' },
+                  style: { fontSize: 24, fontFamily: body, color: primary, marginTop: 4 },
                 }, instructor.role)
+              : null,
+            instructor.bio
+              ? h('span', {
+                  style: { fontSize: 15, fontFamily: body, color: '#ffffffaa', lineHeight: 1.55, marginTop: 8 },
+                }, instructor.bio.length > 130 ? instructor.bio.slice(0, 130) + '…' : instructor.bio)
               : null,
           ),
         )

@@ -8,6 +8,26 @@ export const PDF_W = 595.28; // A4 in points
 export const PDF_H = 841.89;
 export const PAD = 60;       // Default page padding
 
+/**
+ * Resolve an image URL from the cache.
+ *
+ * - Returns the base64 data URI if pre-fetch succeeded.
+ * - Returns `null` if pre-fetch failed (cache has '' sentinel) — caller should
+ *   render an initials/placeholder fallback instead of an <img>.
+ * - Returns the resolved absolute URL if the URL was never attempted (not in cache).
+ */
+export function getImageSrc(
+  imageCache: ImageCache,
+  rawUrl: string | null | undefined,
+  siteBaseUrl: string,
+): string | null {
+  if (!rawUrl) return null;
+  const cached = imageCache.get(rawUrl);
+  if (cached !== undefined) return cached || null; // '' → null (fetch failed → use fallback)
+  // Not in cache — URL was never pre-fetched, return resolved URL directly
+  return rawUrl.startsWith('/') ? `${siteBaseUrl}${rawUrl}` : rawUrl;
+}
+
 // ─── Satori element helper (hyperscript) ─────────────────
 export function h(
   type: string,
@@ -111,6 +131,7 @@ export interface CompanyData {
   emails: { label: string; email: string }[];
   website: string | null;
   address: string | null;
+  cancellation_policy: string | null;
 }
 
 export interface PdfContext {

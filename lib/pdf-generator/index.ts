@@ -5,12 +5,14 @@ import { preloadImages } from './images';
 import { renderPageToPng, assemblePdf } from './renderer';
 import type { PdfContext, SatoriNode } from './types';
 
-import { renderCover } from './pages/cover';
+import { renderCover }        from './pages/cover';
 import { renderPresentation } from './pages/presentation';
-import { renderAbout } from './pages/about';
-import { renderProgram } from './pages/program';
-import { renderSpeaker } from './pages/speaker';
-import { renderClosing } from './pages/closing';
+import { renderAbout }        from './pages/about';
+import { renderProgram }      from './pages/program';
+import { renderSpeakers }     from './pages/speaker';
+import { renderGallery }      from './pages/gallery';
+import { renderInvestment }   from './pages/investment';
+import { renderClosing }      from './pages/closing';
 
 export interface GeneratePdfOptions {
   courseId: string;
@@ -24,9 +26,16 @@ export interface GeneratePdfOptions {
 
 /**
  * Generate a PDF folder for a course + turma, entirely in the browser.
- * No edge function CPU limits apply here.
  *
- * @returns PDF as Uint8Array ready for download or upload to Supabase Storage
+ * Page order:
+ *  1  Capa
+ *  2  Apresentação + Público
+ *  3  Sobre (optional)
+ *  4+ Programação (one per pair of days)
+ *  N  Palestrantes       ← dynamic, all instructors
+ *  N+1 Fotos do Evento + Kit Participante  ← static promotional
+ *  N+2 Investimento      ← two-column price + payment
+ *  N+3 Depoimentos + Parceiros + Entre em Contato  ← closing
  */
 export async function generateFolderPdf(opts: GeneratePdfOptions): Promise<Uint8Array> {
   const {
@@ -61,19 +70,30 @@ export async function generateFolderPdf(opts: GeneratePdfOptions): Promise<Uint8
   const ctx: PdfContext = { ...data, siteBaseUrl, imageCache };
   const pageElements: SatoriNode[] = [];
 
+  // Pages 1-2: always present
   pageElements.push(renderCover(ctx, fonts));
   pageElements.push(renderPresentation(ctx, fonts));
 
+  // Page 3: About (optional — only when about_cards are filled)
   if (data.course.about_cards && data.course.about_cards.length > 0) {
     pageElements.push(renderAbout(ctx, fonts));
   }
 
+  // Pages 4+: Programme (one per pair of days)
   const programPages = renderProgram(ctx, fonts);
   pageElements.push(...programPages);
 
-  const speakerPage = renderSpeaker(ctx, fonts);
-  if (speakerPage) pageElements.push(speakerPage);
+  // Page N: Speakers list
+  const speakersPage = renderSpeakers(ctx, fonts);
+  if (speakersPage) pageElements.push(speakersPage);
 
+  // Page N+1: Static gallery + kit participante
+  pageElements.push(renderGallery(ctx, fonts));
+
+  // Page N+2: Investimento (two-column)
+  pageElements.push(renderInvestment(ctx, fonts));
+
+  // Page N+3: Depoimentos + Parceiros + Contato
   pageElements.push(renderClosing(ctx, fonts));
 
   report(`${pageElements.length} página(s) planejada(s)`);

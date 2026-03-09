@@ -1,13 +1,21 @@
-import { h, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
+import { h, getImageSrc, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
 import { getFontFamily } from '../fonts';
-import { getCheckIcon } from '../icons';
+import { getIcon } from '../icons';
 import type { FontData } from '../types';
 
+/**
+ * Page 11 — Depoimentos + Parceiros + Entre em Contato + Até breve!
+ * Dynamic content from course (testimonials, partners) and company settings.
+ */
 export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
   const { course, company, ds } = ctx;
   const heading = getFontFamily(ds, 'heading', fonts);
-  const body = getFontFamily(ds, 'body', fonts);
+  const body    = getFontFamily(ds, 'body', fonts);
   const primary = ds.color_primary;
+  const accent  = ds.color_accent || ds.color_primary_light || primary;
+
+  const hasTestimonials = course.testimonials && course.testimonials.length > 0;
+  const hasPartners     = course.partner_logos  && course.partner_logos.length  > 0;
 
   return h('div', {
     style: {
@@ -19,174 +27,227 @@ export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
       padding: PAD,
     },
   },
-    h('div', {
-      style: {
-        display: 'flex',
-        fontSize: 36,
-        fontFamily: heading,
-        fontWeight: 700,
-        color: primary,
-        marginBottom: 12,
-        borderBottom: `3px solid ${primary}`,
-        paddingBottom: 16,
-      },
-    }, course.investment_heading || 'Garanta sua Vaga'),
 
-    course.investment_subtitle
-      ? h('div', {
-          style: {
-            display: 'flex',
-            fontSize: 18,
-            fontFamily: body,
-            color: '#ffffffcc',
-            marginBottom: 24,
-            lineHeight: 1.4,
-          },
-        }, course.investment_subtitle)
-      : null,
-
-    ...(course.included_items && course.included_items.length > 0
-      ? [
-          h('div', {
-            style: { display: 'flex', fontSize: 22, fontFamily: heading, fontWeight: 700, color: '#ffffff', marginBottom: 16 },
-          }, 'O que está incluso:'),
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 } },
-            ...(course.included_items || []).map((item) =>
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
-                getCheckIcon(24, primary),
-                h('span', { style: { fontSize: 16, fontFamily: body, color: '#ffffffdd' } }, item.text),
-              ),
-            ),
-          ),
-        ]
-      : []),
-
-    ...(course.testimonials && course.testimonials.length > 0
+    // ═══════════════════════════════════════════════════════
+    // SECTION: Depoimentos
+    // ═══════════════════════════════════════════════════════
+    ...(hasTestimonials
       ? [
           h('div', {
             style: {
               display: 'flex',
-              fontSize: 24,
-              fontFamily: heading,
-              fontWeight: 700,
-              color: primary,
-              marginBottom: 16,
-              marginTop: 8,
+              fontSize: 12,
+              fontFamily: body,
+              color: `${primary}99`,
+              textTransform: 'uppercase',
+              letterSpacing: 3,
+              marginBottom: 4,
             },
+          }, 'O que Dizem'),
+
+          h('div', {
+            style: { display: 'flex', fontSize: 52, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
           }, 'Depoimentos'),
-          h('div', { style: { display: 'flex', gap: 16, marginBottom: 28, flexWrap: 'wrap' } },
-            ...course.testimonials.slice(0, 4).map((t) =>
-              h('div', {
+
+          h('div', { style: { width: 50, height: 4, backgroundColor: primary, borderRadius: 2, marginBottom: 20 } }),
+
+          h('div', {
+            style: { display: 'flex', flexDirection: 'row', gap: 16, marginBottom: 32, flexWrap: 'wrap' },
+          },
+            ...course.testimonials!.slice(0, 4).map((t) => {
+              const photoSrc = getImageSrc(ctx.imageCache, t.thumbnail_url, ctx.siteBaseUrl);
+              return h('div', {
                 style: {
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 12,
-                  padding: '12px 16px',
-                  borderRadius: 12,
+                  gap: 10,
+                  padding: '20px 24px',
+                  borderRadius: 16,
                   backgroundColor: `${ds.color_surface}cc`,
                   border: `1px solid ${primary}22`,
+                  flex: 1,
                 },
               },
-                t.thumbnail_url
+                photoSrc
                   ? h('img', {
-                      src: ctx.imageCache.get(t.thumbnail_url) ??
-                        (t.thumbnail_url.startsWith('/') ? `${ctx.siteBaseUrl}${t.thumbnail_url}` : t.thumbnail_url),
-                      width: 48,
-                      height: 48,
-                      style: { borderRadius: '50%', objectFit: 'cover' },
+                      src: photoSrc,
+                      width: 80,
+                      height: 80,
+                      style: { borderRadius: 8, objectFit: 'cover', border: `2px solid ${primary}44` },
                     })
                   : h('div', {
                       style: {
-                        width: 48,
-                        height: 48,
-                        borderRadius: '50%',
+                        width: 80,
+                        height: 80,
+                        borderRadius: 8,
                         backgroundColor: primary,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: 18,
+                        fontSize: 28,
+                        fontFamily: heading,
                         fontWeight: 700,
                         color: '#ffffff',
-                        fontFamily: heading,
                       },
                     }, t.name.charAt(0)),
-                h('div', { style: { display: 'flex', flexDirection: 'column' } },
-                  h('span', { style: { fontSize: 15, fontFamily: heading, fontWeight: 600, color: '#ffffff' } }, t.name),
-                  t.role
-                    ? h('span', { style: { fontSize: 12, fontFamily: body, color: '#ffffffaa' } }, t.role)
-                    : null,
-                ),
-              ),
-            ),
-          ),
-        ]
-      : []),
-
-    ...(course.partner_logos && course.partner_logos.length > 0
-      ? [
-          h('div', {
-            style: {
-              display: 'flex',
-              fontSize: 18,
-              fontFamily: heading,
-              fontWeight: 600,
-              color: '#ffffff88',
-              marginBottom: 16,
-              textTransform: 'uppercase',
-              letterSpacing: 2,
-            },
-          }, 'Parceiros'),
-          h('div', {
-            style: { display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', marginBottom: 28 },
-          },
-            ...course.partner_logos.map((logo) => {
-              const imgSrc = logo.url
-                ? (ctx.imageCache.get(logo.url) ??
-                    (logo.url.startsWith('/') ? `${ctx.siteBaseUrl}${logo.url}` : logo.url))
-                : '';
-              return imgSrc
-                ? h('img', {
-                    src: imgSrc,
-                    width: logo.width || 120,
-                    height: logo.height || 48,
-                    style: { objectFit: 'contain' },
-                  })
-                : h('span', {
-                    style: { fontSize: 14, fontFamily: body, color: '#ffffff88' },
-                  }, logo.name);
+                h('span', {
+                  style: { fontSize: 15, fontFamily: heading, fontWeight: 700, color: '#ffffff', textAlign: 'center' },
+                }, t.name),
+                t.role
+                  ? h('span', { style: { fontSize: 12, fontFamily: body, color: accent, textAlign: 'center' } }, t.role)
+                  : null,
+              );
             }),
           ),
         ]
       : []),
 
-    h('div', { style: { flexGrow: 1, display: 'flex', minHeight: 10 } }),
+    // ═══════════════════════════════════════════════════════
+    // SECTION: Parceiros
+    // ═══════════════════════════════════════════════════════
+    ...(hasPartners
+      ? [
+          h('div', {
+            style: {
+              display: 'flex',
+              fontSize: 12,
+              fontFamily: body,
+              color: `${primary}99`,
+              textTransform: 'uppercase',
+              letterSpacing: 3,
+              marginBottom: 4,
+            },
+          }, 'Instituições'),
 
+          h('div', {
+            style: { display: 'flex', fontSize: 38, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
+          }, 'Parceiros'),
+
+          h('div', { style: { width: 50, height: 4, backgroundColor: primary, borderRadius: 2, marginBottom: 20 } }),
+
+          h('div', {
+            style: {
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 24,
+              flexWrap: 'wrap',
+              marginBottom: 32,
+            },
+          },
+            ...course.partner_logos!.map((logo) => {
+              const imgSrc = getImageSrc(ctx.imageCache, logo.url, ctx.siteBaseUrl);
+              return imgSrc
+                ? h('img', {
+                    src: imgSrc,
+                    width: logo.width  || 110,
+                    height: logo.height || 50,
+                    style: { objectFit: 'contain' },
+                  })
+                : h('span', { style: { fontSize: 14, fontFamily: body, color: '#ffffff88' } }, logo.name);
+            }),
+          ),
+        ]
+      : []),
+
+    // ═══════════════════════════════════════════════════════
+    // SECTION: Entre em Contato
+    // ═══════════════════════════════════════════════════════
+    h('div', {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '28px 32px',
+        borderRadius: 16,
+        backgroundColor: `${ds.color_surface}cc`,
+        border: `1px solid ${primary}33`,
+        marginBottom: 28,
+      },
+    },
+      h('span', {
+        style: { fontSize: 22, fontFamily: heading, fontWeight: 700, color: '#ffffff', marginBottom: 20 },
+      }, 'Entre em Contato'),
+
+      h('div', {
+        style: { display: 'flex', flexDirection: 'row', gap: 48 },
+      },
+        // Left: phones + emails
+        h('div', {
+          style: { display: 'flex', flexDirection: 'column', gap: 13, flex: 1 },
+        },
+          ...(company.phones || []).map((p) =>
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+              getIcon('Phone', 18, primary),
+              h('span', { style: { fontSize: 14, fontFamily: body, color: '#ffffffdd' } },
+                `${p.label}: ${p.number}`),
+            ),
+          ),
+          ...(company.emails || []).map((e) =>
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+              getIcon('Mail', 18, primary),
+              h('span', { style: { fontSize: 14, fontFamily: body, color: '#ffffffdd' } }, e.email),
+            ),
+          ),
+        ),
+
+        // Right: website + address
+        h('div', {
+          style: { display: 'flex', flexDirection: 'column', gap: 13, flex: 1 },
+        },
+          company.website
+            ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 12 } },
+                getIcon('Globe', 18, primary),
+                h('span', { style: { fontSize: 14, fontFamily: body, color: '#ffffffdd' } }, company.website),
+              )
+            : null,
+          company.address
+            ? h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12 } },
+                h('div', { style: { display: 'flex', flexShrink: 0, marginTop: 1 } },
+                  getIcon('MapPin', 18, primary),
+                ),
+                h('span', {
+                  style: { fontSize: 14, fontFamily: body, color: '#ffffffdd', lineHeight: 1.5 },
+                }, company.address),
+              )
+            : null,
+        ),
+      ),
+    ),
+
+    // ═══════════════════════════════════════════════════════
+    // FOOTER: Logo + "Até breve!" + website
+    // ═══════════════════════════════════════════════════════
+    h('div', { style: { flexGrow: 1, display: 'flex', minHeight: 10 } }),
     h('div', {
       style: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: 8,
-        padding: '24px 0',
-        borderTop: `1px solid ${primary}33`,
+        gap: 12,
+        paddingTop: 24,
+        borderTop: `1px solid ${primary}22`,
       },
     },
-      h('span', { style: { fontSize: 20, fontFamily: heading, fontWeight: 700, color: '#ffffff' } }, company.company_name),
+      getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl)
+        ? h('img', {
+            src: getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl)!,
+            width: 200,
+            height: 56,
+            style: { objectFit: 'contain' },
+          })
+        : h('span', {
+            style: { fontSize: 28, fontFamily: heading, fontWeight: 700, color: '#ffffff' },
+          }, company.company_name),
+
+      h('span', {
+        style: { fontSize: 18, fontFamily: body, color: '#ffffffaa', letterSpacing: 4 },
+      }, 'Até breve!'),
+
       company.website
-        ? h('span', { style: { fontSize: 14, fontFamily: body, color: primary } }, company.website)
-        : null,
-      company.phones && company.phones.length > 0
-        ? h('span', { style: { fontSize: 13, fontFamily: body, color: '#ffffffaa' } },
-            company.phones.map((p) => `${p.label}: ${p.number}`).join(' | '))
-        : null,
-      company.emails && company.emails.length > 0
-        ? h('span', { style: { fontSize: 13, fontFamily: body, color: '#ffffffaa' } },
-            company.emails.map((e) => e.email).join(' | '))
-        : null,
-      company.address
         ? h('span', {
-            style: { fontSize: 12, fontFamily: body, color: '#ffffff77', textAlign: 'center', maxWidth: 600 },
-          }, company.address)
+            style: { fontSize: 12, fontFamily: body, color: '#ffffff44', letterSpacing: 2 },
+          }, company.website)
         : null,
     ),
   );

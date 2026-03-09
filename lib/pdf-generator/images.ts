@@ -1,4 +1,5 @@
 import type { PdfContext, ImageCache } from './types';
+import { STATIC_PDF_IMAGES } from './config';
 
 export type { ImageCache };
 
@@ -36,9 +37,17 @@ export async function fetchImageAsDataUri(
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-    const res = await fetch(url, { signal: controller.signal });
+    // Relative URLs (starting with '/') are same-origin — fetch directly.
+    // No CORS restriction and resolves against the correct local server,
+    // not against siteBaseUrl (which points to the production domain).
+    // Absolute cross-origin URLs are routed through the server-side proxy
+    // to avoid CORS restrictions in the browser.
+    const fetchUrl = rawUrl.startsWith('/')
+      ? rawUrl
+      : `/api/pdf-proxy?url=${encodeURIComponent(url)}`;
+    const res = await fetch(fetchUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
 
     if (!res.ok) {
@@ -86,6 +95,10 @@ export async function preloadImages(ctx: PdfContext): Promise<ImageCache> {
     if (logo.url) rawUrls.push(logo.url);
   }
 
+  // Static promotional images (Gallery page — same in every PDF)
+  if (STATIC_PDF_IMAGES.eventBanner)    rawUrls.push(STATIC_PDF_IMAGES.eventBanner);
+  if (STATIC_PDF_IMAGES.kitParticipant) rawUrls.push(STATIC_PDF_IMAGES.kitParticipant);
+
   const unique = [...new Set(rawUrls)];
   if (unique.length === 0) return cache;
 
@@ -100,9 +113,13 @@ export async function preloadImages(ctx: PdfContext): Promise<ImageCache> {
 
   let successCount = 0;
   for (const result of results) {
-    if (result.status === 'fulfilled' && result.value.dataUri) {
+    if (result.status === 'fulfilled') {
+      // Always store in cache — empty string '' acts as a sentinel meaning
+      // "fetch was attempted but failed". Pages use getImageSrc() which
+      // converts '' → null so they render the initials/placeholder fallback
+      // instead of passing a broken URL to satori.
       cache.set(result.value.rawUrl, result.value.dataUri);
-      successCount++;
+      if (result.value.dataUri) successCount++;
     }
   }
 

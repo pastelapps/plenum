@@ -1,15 +1,20 @@
-import { h, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
+import { h, getImageSrc, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
 import { getFontFamily } from '../fonts';
 import type { FontData } from '../types';
 
-export function renderSpeaker(ctx: PdfContext, fonts: FontData[]): SatoriNode | null {
-  const { instructors, ds } = ctx;
-  const heading = getFontFamily(ds, 'heading', fonts);
-  const body = getFontFamily(ds, 'body', fonts);
-  const primary = ds.color_primary;
-  const instructor = instructors[0];
+/**
+ * Page 8 — Palestrantes
+ * Lists all course instructors with their square photo, name, role and bio.
+ * Layout follows the reference PDF structure using our design system colours.
+ */
+export function renderSpeakers(ctx: PdfContext, fonts: FontData[]): SatoriNode | null {
+  const { instructors, ds, company } = ctx;
+  if (!instructors.length) return null;
 
-  if (!instructor) return null;
+  const heading = getFontFamily(ds, 'heading', fonts);
+  const body    = getFontFamily(ds, 'body', fonts);
+  const primary = ds.color_primary;
+  const accent  = ds.color_accent || ds.color_primary_light || primary;
 
   return h('div', {
     style: {
@@ -21,124 +26,164 @@ export function renderSpeaker(ctx: PdfContext, fonts: FontData[]): SatoriNode | 
       padding: PAD,
     },
   },
+
+    // ── Breadcrumb label ────────────────────────────────────
     h('div', {
       style: {
         display: 'flex',
-        fontSize: 36,
-        fontFamily: heading,
-        fontWeight: 700,
-        color: primary,
-        marginBottom: 32,
-        borderBottom: `3px solid ${primary}`,
-        paddingBottom: 16,
+        fontSize: 11,
+        fontFamily: body,
+        color: `${primary}99`,
+        textTransform: 'uppercase',
+        letterSpacing: 3,
+        marginBottom: 4,
       },
-    }, 'Palestrante'),
+    }, 'Palestrantes'),
 
+    // ── Section sub-label ───────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        fontSize: 13,
+        fontFamily: body,
+        fontWeight: 600,
+        color: primary,
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+        marginBottom: 10,
+      },
+    }, 'Corpo Docente'),
+
+    // ── Page title ──────────────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        fontSize: 52,
+        fontFamily: heading,
+        fontWeight: 800,
+        color: '#ffffff',
+        marginBottom: 10,
+      },
+    }, 'Palestrantes'),
+
+    // ── Accent underline ────────────────────────────────────
+    h('div', {
+      style: {
+        width: 56,
+        height: 4,
+        backgroundColor: primary,
+        borderRadius: 2,
+        marginBottom: 16,
+      },
+    }),
+
+    // ── Sub-heading ─────────────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        fontSize: 16,
+        fontFamily: body,
+        color: '#ffffffaa',
+        marginBottom: 36,
+      },
+    }, 'Conheça os profissionais que conduzirão o curso.'),
+
+    // ── Instructor cards ────────────────────────────────────
     h('div', {
       style: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        gap: 24,
-        padding: '48px 40px',
-        borderRadius: 24,
-        backgroundColor: `${ds.color_surface}cc`,
-        border: `1px solid ${primary}22`,
+        gap: 20,
+        flex: 1,
       },
     },
-      instructor.photo_url
-        ? h('img', {
-            src: ctx.imageCache.get(instructor.photo_url) ??
-              (instructor.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${instructor.photo_url}` : instructor.photo_url),
-            width: 200,
-            height: 200,
-            style: { borderRadius: '50%', objectFit: 'cover', border: `4px solid ${primary}44` },
-          })
-        : h('div', {
-            style: {
-              width: 200,
-              height: 200,
-              borderRadius: '50%',
-              backgroundColor: primary,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 72,
-              fontFamily: heading,
-              fontWeight: 700,
-              color: '#ffffff',
-            },
-          }, instructor.name.charAt(0)),
+      ...instructors.map((inst) => {
+        const photoSrc = getImageSrc(ctx.imageCache, inst.photo_url, ctx.siteBaseUrl);
+        return h('div', {
+          style: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 28,
+            padding: '20px 28px',
+            borderRadius: 16,
+            backgroundColor: `${ds.color_surface}cc`,
+            border: `1px solid ${primary}33`,
+          },
+        },
+          // Square photo — no circle clip
+          photoSrc
+            ? h('img', {
+                src: photoSrc,
+                width: 120,
+                height: 140,
+                style: {
+                  borderRadius: 8,
+                  objectFit: 'cover',
+                  flexShrink: 0,
+                  border: `2px solid ${primary}44`,
+                },
+              })
+            : h('div', {
+                style: {
+                  width: 120,
+                  height: 140,
+                  borderRadius: 8,
+                  backgroundColor: primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 44,
+                  fontFamily: heading,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  flexShrink: 0,
+                },
+              }, inst.name.charAt(0)),
 
-      h('span', {
-        style: { fontSize: 36, fontFamily: heading, fontWeight: 700, color: '#ffffff', textAlign: 'center' },
-      }, instructor.name),
-
-      instructor.role
-        ? h('span', {
-            style: { fontSize: 18, fontFamily: body, color: primary, textAlign: 'center', marginTop: -8 },
-          }, instructor.role)
-        : null,
-
-      instructor.bio
-        ? h('div', {
-            style: {
-              display: 'flex',
-              fontSize: 17,
-              fontFamily: body,
-              color: '#ffffffcc',
-              lineHeight: 1.65,
-              textAlign: 'center',
-              maxWidth: 900,
-              marginTop: 8,
-            },
-          }, instructor.bio)
-        : null,
-    ),
-
-    ...(ctx.instructors.length > 1
-      ? ctx.instructors.slice(1).map((inst) =>
+          // Name / role / bio
           h('div', {
             style: {
               display: 'flex',
-              alignItems: 'center',
-              gap: 20,
-              padding: '20px 28px',
-              borderRadius: 16,
-              backgroundColor: `${ds.color_surface}88`,
-              border: `1px solid ${primary}11`,
-              marginTop: 20,
+              flexDirection: 'column',
+              gap: 6,
+              flex: 1,
             },
           },
-            inst.photo_url
-              ? h('img', {
-                  src: ctx.imageCache.get(inst.photo_url) ??
-                    (inst.photo_url.startsWith('/') ? `${ctx.siteBaseUrl}${inst.photo_url}` : inst.photo_url),
-                  width: 64,
-                  height: 64,
-                  style: { borderRadius: '50%', objectFit: 'cover' },
-                })
-              : h('div', {
-                  style: {
-                    width: 64,
-                    height: 64,
-                    borderRadius: '50%',
-                    backgroundColor: primary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 24,
-                    fontFamily: heading,
-                    fontWeight: 700,
-                    color: '#ffffff',
-                  },
-                }, inst.name.charAt(0)),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 4 } },
-              h('span', { style: { fontSize: 20, fontFamily: heading, fontWeight: 700, color: '#ffffff' } }, inst.name),
-              inst.role ? h('span', { style: { fontSize: 14, fontFamily: body, color: '#ffffffaa' } }, inst.role) : null,
-            ),
+            h('span', {
+              style: { fontSize: 26, fontFamily: heading, fontWeight: 700, color: '#ffffff' },
+            }, inst.name),
+
+            inst.role
+              ? h('span', {
+                  style: { fontSize: 15, fontFamily: body, fontWeight: 600, color: accent },
+                }, inst.role)
+              : null,
+
+            inst.bio
+              ? h('span', {
+                  style: { fontSize: 14, fontFamily: body, color: '#ffffffaa', lineHeight: 1.5 },
+                }, inst.bio)
+              : null,
           ),
-        )
-      : []),
+        );
+      }),
+    ),
+
+    // ── Footer ──────────────────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        paddingTop: 16,
+        borderTop: `1px solid ${primary}22`,
+        marginTop: 16,
+        fontSize: 11,
+        fontFamily: body,
+        color: '#ffffff33',
+        textTransform: 'uppercase',
+        letterSpacing: 2,
+      },
+    }, company.company_name),
   );
 }

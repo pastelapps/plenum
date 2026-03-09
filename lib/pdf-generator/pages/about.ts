@@ -6,7 +6,7 @@ import type { FontData } from '../types';
 export function renderAbout(ctx: PdfContext, fonts: FontData[]): SatoriNode {
   const { course, ds } = ctx;
   const heading = getFontFamily(ds, 'heading', fonts);
-  const body = getFontFamily(ds, 'body', fonts);
+  const body    = getFontFamily(ds, 'body', fonts);
   const primary = ds.color_primary;
 
   const cards = course.about_cards || [];
@@ -25,48 +25,63 @@ export function renderAbout(ctx: PdfContext, fonts: FontData[]): SatoriNode {
       padding: PAD,
     },
   },
-    course.about_heading
-      ? h('div', {
-          style: {
-            display: 'flex',
-            fontSize: 40,
-            fontFamily: heading,
-            fontWeight: 700,
-            color: primary,
-            marginBottom: 16,
-            borderBottom: `3px solid ${primary}`,
-            paddingBottom: 16,
-          },
-        }, course.about_heading)
-      : null,
 
+    // ── Breadcrumb label ─────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        fontSize: 12,
+        fontFamily: body,
+        color: `${primary}99`,
+        textTransform: 'uppercase',
+        letterSpacing: 4,
+        marginBottom: 6,
+      },
+    }, 'Conteúdo'),
+
+    // ── Page title ───────────────────────────────────────
+    h('div', {
+      style: {
+        display: 'flex',
+        fontSize: 52,
+        fontFamily: heading,
+        fontWeight: 800,
+        color: '#ffffff',
+        marginBottom: 10,
+      },
+    }, course.about_heading || 'Sobre o Curso'),
+
+    // ── Accent underline ─────────────────────────────────
+    h('div', { style: { width: 56, height: 4, backgroundColor: primary, borderRadius: 2, marginBottom: 20 } }),
+
+    // ── Sub-heading ──────────────────────────────────────
     course.about_subheading
       ? h('div', {
           style: {
             display: 'flex',
-            fontSize: 20,
+            fontSize: 17,
             fontFamily: body,
-            fontWeight: 400,
             color: '#ffffffcc',
-            lineHeight: 1.5,
-            marginBottom: 40,
+            lineHeight: 1.6,
+            marginBottom: 44,
           },
         }, course.about_subheading)
-      : null,
+      : h('div', { style: { marginBottom: 28 } }),
 
+    // ── Cards grid (2 per row) ────────────────────────────
     ...rows.map((row) =>
-      h('div', { style: { display: 'flex', gap: 20, marginBottom: 20 } },
+      h('div', { style: { display: 'flex', gap: 24, marginBottom: 24 } },
         ...row.map((card) =>
           h('div', {
             style: {
               display: 'flex',
               flexDirection: 'column',
               flex: 1,
-              padding: '28px 24px',
+              padding: '32px 28px',
               borderRadius: 16,
               backgroundColor: `${ds.color_surface}cc`,
               border: `1px solid ${primary}22`,
-              gap: 12,
+              gap: 14,
             },
           },
             h('div', { style: { display: 'flex' } }, getIcon(card.icon, 36, primary)),
@@ -74,7 +89,7 @@ export function renderAbout(ctx: PdfContext, fonts: FontData[]): SatoriNode {
               style: { fontSize: 20, fontFamily: heading, fontWeight: 700, color: '#ffffff' },
             }, card.title),
             h('span', {
-              style: { fontSize: 16, fontFamily: body, color: '#ffffffbb', lineHeight: 1.45 },
+              style: { fontSize: 16, fontFamily: body, color: '#ffffffbb', lineHeight: 1.55 },
             }, card.description),
           ),
         ),

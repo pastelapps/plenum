@@ -1,8 +1,8 @@
 import { PAGE_W, PAGE_H, PDF_W, PDF_H, type SatoriNode, type FontData } from './types';
 
-// Render at ~37% of satori width — acceptable quality for digital brochures.
-// 465px ≈ 56 DPI in a 595-point PDF.
-const RENDER_W = 465;
+// Render at native satori width (1240px) for 150 DPI output.
+// Matches PAGE_W so resvg rasterises the SVG 1:1 with no downscale.
+const RENDER_W = PAGE_W;
 
 // Lazy-loaded module references (avoids SSR issues in Next.js)
 let resvgMod: typeof import('@resvg/resvg-wasm') | null = null;
