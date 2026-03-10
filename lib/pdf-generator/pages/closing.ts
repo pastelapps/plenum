@@ -41,7 +41,7 @@ export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
               fontFamily: body,
               color: `${primary}99`,
               textTransform: 'uppercase',
-              letterSpacing: 3,
+              letterSpacing: 4,
               marginBottom: 4,
             },
           }, 'O que Dizem'),
@@ -116,13 +116,13 @@ export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
               fontFamily: body,
               color: `${primary}99`,
               textTransform: 'uppercase',
-              letterSpacing: 3,
+              letterSpacing: 4,
               marginBottom: 4,
             },
           }, 'Instituições'),
 
           h('div', {
-            style: { display: 'flex', fontSize: 38, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
+            style: { display: 'flex', fontSize: 52, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
           }, 'Parceiros'),
 
           h('div', { style: { width: 50, height: 4, backgroundColor: primary, borderRadius: 2, marginBottom: 20 } }),

@@ -38,7 +38,7 @@ export function renderInvestment(ctx: PdfContext, fonts: FontData[]): SatoriNode
         fontFamily: body,
         color: primary,
         textTransform: 'uppercase',
-        letterSpacing: 3,
+        letterSpacing: 4,
         marginBottom: 6,
       },
     }, 'Valores e Condições'),
