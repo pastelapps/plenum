@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import {
-  LayoutDashboard,
+  BarChart2,
   BookOpen,
   Users,
   Settings,
@@ -14,16 +14,27 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import {
+  type UserRole,
+  hasMinRole,
+  ROLE_LABELS,
+  ROLE_COLORS,
+} from '@/types/user-roles';
 
-const navItems = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Cursos', href: '/admin/cursos', icon: BookOpen },
-  { label: 'Leads', href: '/admin/leads', icon: Users },
-  { label: 'Configurações', href: '/admin/configuracoes', icon: Settings },
+const NAV_ITEMS = [
+  { label: 'Dashboard',     href: '/admin',               icon: BarChart2, minRole: 'consultor' as UserRole },
+  { label: 'Cursos',        href: '/admin/cursos',         icon: BookOpen,  minRole: 'consultor' as UserRole },
+  { label: 'Leads',         href: '/admin/leads',          icon: Users,     minRole: 'gerente'   as UserRole },
+  { label: 'Configurações', href: '/admin/configuracoes',  icon: Settings,  minRole: 'admin'     as UserRole },
 ];
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+interface AdminShellProps {
+  children: React.ReactNode;
+  role?: UserRole;
+}
+
+export default function AdminShell({ children, role = 'dev' }: AdminShellProps) {
+  const router   = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -42,6 +53,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
     if (href === '/admin') return pathname === '/admin';
     return pathname.startsWith(href);
   };
+
+  // Only show nav items the current role has access to
+  const visibleItems = NAV_ITEMS.filter((item) => hasMinRole(role, item.minRole));
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -73,7 +87,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
 
         {/* Nav */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {navItems.map((item) => (
+          {visibleItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
@@ -91,8 +105,16 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           ))}
         </nav>
 
-        {/* Logout */}
-        <div className="p-3 border-t shrink-0">
+        {/* Role badge + Logout */}
+        <div className="p-3 border-t shrink-0 space-y-2">
+          <div className="px-3">
+            <span className={cn(
+              'inline-flex text-xs font-medium px-2.5 py-1 rounded-full',
+              ROLE_COLORS[role]
+            )}>
+              {ROLE_LABELS[role]}
+            </span>
+          </div>
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 text-gray-500 hover:text-red-600"
