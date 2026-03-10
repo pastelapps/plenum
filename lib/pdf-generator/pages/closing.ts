@@ -1,6 +1,7 @@
 import { h, getImageSrc, PAGE_W, PAGE_H, PAD, type PdfContext, type SatoriNode } from '../types';
 import { getFontFamily } from '../fonts';
 import { getIcon } from '../icons';
+import { STATIC_PDF_IMAGES } from '../config';
 import type { FontData } from '../types';
 
 /**
@@ -229,16 +230,22 @@ export function renderClosing(ctx: PdfContext, fonts: FontData[]): SatoriNode {
         borderTop: `1px solid ${primary}22`,
       },
     },
-      getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl)
-        ? h('img', {
-            src: getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl)!,
-            width: 200,
-            height: 56,
-            style: { objectFit: 'contain' },
-          })
-        : h('span', {
-            style: { fontSize: 28, fontFamily: heading, fontWeight: 700, color: '#ffffff' },
-          }, company.company_name),
+      // Logo: company DB logo → static Plenum logo → company name text
+      (() => {
+        const logoSrc =
+          getImageSrc(ctx.imageCache, company.logo_url, ctx.siteBaseUrl) ??
+          getImageSrc(ctx.imageCache, STATIC_PDF_IMAGES.logoUrl, ctx.siteBaseUrl);
+        return logoSrc
+          ? h('img', {
+              src: logoSrc,
+              width: 220,
+              height: 64,
+              style: { objectFit: 'contain' },
+            })
+          : h('span', {
+              style: { fontSize: 28, fontFamily: heading, fontWeight: 700, color: '#ffffff' },
+            }, company.company_name);
+      })(),
 
       h('span', {
         style: { fontSize: 18, fontFamily: body, color: '#ffffffaa', letterSpacing: 4 },
