@@ -59,13 +59,13 @@ export function renderGallery(ctx: PdfContext, fonts: FontData[]): SatoriNode {
         fontFamily: body,
         color: primary,
         textTransform: 'uppercase',
-        letterSpacing: 3,
+        letterSpacing: 4,
         marginBottom: 6,
       },
     }, 'Registros'),
 
     h('div', {
-      style: { display: 'flex', fontSize: 44, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
+      style: { display: 'flex', fontSize: 52, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
     }, 'Fotos do Evento'),
 
     h('div', { style: { width: 50, height: 4, backgroundColor: primary, borderRadius: 2, marginBottom: 12 } }),
@@ -75,25 +75,27 @@ export function renderGallery(ctx: PdfContext, fonts: FontData[]): SatoriNode {
     }, 'Confira alguns registros de edições anteriores do nosso curso.'),
 
     // ── Photo mosaic 3 + 2 ───────────────────────────────
+    // innerW = 1120  →  row1 gaps=16 usable=1104  →  435|335|335
+    //                   row2 gap=8  usable=1112  →  649|463
     h('div', {
       style: {
         display: 'flex',
         flexDirection: 'column',
         gap: 8,
-        marginBottom: 36,
+        marginBottom: 32,
         width: innerW,
       },
     },
-      // Row 1 — 3 photos (flex: 1.3 | 1 | 1)
-      h('div', { style: { display: 'flex', gap: 8, height: 210 } },
-        _photoCell(photoSrcs[0], 1.3, ds, primary),
-        _photoCell(photoSrcs[1], 1,   ds, primary),
-        _photoCell(photoSrcs[2], 1,   ds, primary),
+      // Row 1 — 3 photos
+      h('div', { style: { display: 'flex', gap: 8 } },
+        _photoCell(photoSrcs[0], 435, 210, ds, primary),
+        _photoCell(photoSrcs[1], 335, 210, ds, primary),
+        _photoCell(photoSrcs[2], 335, 210, ds, primary),
       ),
-      // Row 2 — 2 photos (flex: 1.4 | 1)
-      h('div', { style: { display: 'flex', gap: 8, height: 190 } },
-        _photoCell(photoSrcs[3], 1.4, ds, primary),
-        _photoCell(photoSrcs[4], 1,   ds, primary),
+      // Row 2 — 2 photos
+      h('div', { style: { display: 'flex', gap: 8 } },
+        _photoCell(photoSrcs[3], 649, 190, ds, primary),
+        _photoCell(photoSrcs[4], 463, 190, ds, primary),
       ),
     ),
 
@@ -108,13 +110,13 @@ export function renderGallery(ctx: PdfContext, fonts: FontData[]): SatoriNode {
         fontFamily: body,
         color: accent,
         textTransform: 'uppercase',
-        letterSpacing: 3,
+        letterSpacing: 4,
         marginBottom: 6,
       },
     }, 'Material Exclusivo'),
 
     h('div', {
-      style: { display: 'flex', fontSize: 38, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
+      style: { display: 'flex', fontSize: 52, fontFamily: heading, fontWeight: 800, color: '#ffffff', marginBottom: 8 },
     }, 'Kit Participante'),
 
     h('div', { style: { width: 50, height: 4, backgroundColor: primary, borderRadius: 2, marginBottom: 20 } }),
@@ -170,34 +172,39 @@ export function renderGallery(ctx: PdfContext, fonts: FontData[]): SatoriNode {
   );
 }
 
-/** Render a single photo cell in the mosaic grid */
+/**
+ * Render a single photo cell in the mosaic grid.
+ * IMPORTANT: satori requires explicit `width` and `height` attributes on <img> —
+ * CSS-only sizing (flex / height:'100%') is not sufficient.
+ */
 function _photoCell(
   src: string | null,
-  flex: number,
+  w: number,
+  h_px: number,
   ds: { color_surface: string },
   primary: string,
 ): SatoriNode {
   if (src) {
     return h('img', {
       src,
+      width: w,
+      height: h_px,
       style: {
-        flex,
-        height: '100%',
-        objectFit: 'cover',
         borderRadius: 10,
-        minWidth: 0,
+        objectFit: 'cover',
+        flexShrink: 0,
       },
     });
   }
   // Placeholder when image not available
   return h('div', {
     style: {
-      flex,
-      height: '100%',
+      width: w,
+      height: h_px,
       borderRadius: 10,
       backgroundColor: `${ds.color_surface}88`,
       border: `1px solid ${primary}22`,
-      minWidth: 0,
+      flexShrink: 0,
     },
   });
 }

@@ -31,11 +31,11 @@ export function renderSpeakers(ctx: PdfContext, fonts: FontData[]): SatoriNode |
     h('div', {
       style: {
         display: 'flex',
-        fontSize: 11,
+        fontSize: 12,
         fontFamily: body,
         color: `${primary}99`,
         textTransform: 'uppercase',
-        letterSpacing: 3,
+        letterSpacing: 4,
         marginBottom: 4,
       },
     }, 'Palestrantes'),
@@ -81,7 +81,7 @@ export function renderSpeakers(ctx: PdfContext, fonts: FontData[]): SatoriNode |
     h('div', {
       style: {
         display: 'flex',
-        fontSize: 16,
+        fontSize: 17,
         fontFamily: body,
         color: '#ffffffaa',
         marginBottom: 36,
