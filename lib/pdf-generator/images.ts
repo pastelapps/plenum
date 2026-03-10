@@ -96,8 +96,11 @@ export async function preloadImages(ctx: PdfContext): Promise<ImageCache> {
   }
 
   // Static promotional images (Gallery page — same in every PDF)
-  if (STATIC_PDF_IMAGES.eventBanner)    rawUrls.push(STATIC_PDF_IMAGES.eventBanner);
+  for (const url of STATIC_PDF_IMAGES.eventPhotos) {
+    if (url) rawUrls.push(url);
+  }
   if (STATIC_PDF_IMAGES.kitParticipant) rawUrls.push(STATIC_PDF_IMAGES.kitParticipant);
+  if (STATIC_PDF_IMAGES.logoUrl)        rawUrls.push(STATIC_PDF_IMAGES.logoUrl);
 
   const unique = [...new Set(rawUrls)];
   if (unique.length === 0) return cache;
