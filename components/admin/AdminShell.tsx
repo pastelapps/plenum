@@ -58,7 +58,7 @@ export default function AdminShell({ children, role = 'dev' }: AdminShellProps) 
   const visibleItems = NAV_ITEMS.filter((item) => hasMinRole(role, item.minRole));
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden text-gray-900 bg-gray-50">
       {/* Sidebar overlay (mobile) */}
       {sidebarOpen && (
         <div

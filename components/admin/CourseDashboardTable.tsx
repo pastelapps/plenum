@@ -285,7 +285,7 @@ function TurmaRow({
         </Button>
 
         {/* Edit */}
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" className="text-gray-700" asChild>
           <Link href={`/admin/cursos/${courseId}/turmas/${turma.id}`}>
             <Pencil className="w-3.5 h-3.5 mr-1" />
             Editar
