@@ -7,16 +7,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
 import type { AudienceCard, AudienceImage } from '@/types/course';
+import type { UserRole } from '@/types/user-roles';
 
 interface Props {
   audienceCards: AudienceCard[]; setAudienceCards: (v: AudienceCard[]) => void;
   audienceImages: AudienceImage[]; setAudienceImages: (v: AudienceImage[]) => void;
+  role?: UserRole;
 }
 
 export default function TabPublico({
   audienceCards, setAudienceCards,
   audienceImages, setAudienceImages,
+  role = 'dev',
 }: Props) {
+  const isDev = role === 'dev';
   // Audience Cards
   const addCard = () => setAudienceCards([...audienceCards, { icon: 'User', title: '', description: '' }]);
   const removeCard = (i: number) => setAudienceCards(audienceCards.filter((_, idx) => idx !== i));
@@ -72,7 +76,7 @@ export default function TabPublico({
         </CardContent>
       </Card>
 
-      <Card>
+      {isDev && <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Imagens de Fundo ({audienceImages.length})</CardTitle>
           <Button variant="outline" size="sm" onClick={addImage}>
@@ -101,7 +105,7 @@ export default function TabPublico({
             </div>
           ))}
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   );
 }

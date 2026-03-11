@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Upload, ImageIcon, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { IncludedItem } from '@/types/course';
+import type { UserRole } from '@/types/user-roles';
 
 interface Props {
   investmentHeading: string; setInvestmentHeading: (v: string) => void;
@@ -17,6 +18,7 @@ interface Props {
   backgroundImageUrl: string; setBackgroundImageUrl: (v: string) => void;
   productImageUrl: string; setProductImageUrl: (v: string) => void;
   courseSlug: string;
+  role?: UserRole;
 }
 
 export default function TabInvestimento({
@@ -26,7 +28,9 @@ export default function TabInvestimento({
   backgroundImageUrl, setBackgroundImageUrl,
   productImageUrl, setProductImageUrl,
   courseSlug,
+  role = 'dev',
 }: Props) {
+  const isDev = role === 'dev';
   const fileInputRef = useRef<HTMLInputElement>(null);
   const productInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
@@ -120,8 +124,8 @@ export default function TabInvestimento({
         </CardContent>
       </Card>
 
-      {/* Plano de Fundo */}
-      <Card>
+      {/* Plano de Fundo — dev only */}
+      {isDev && <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
@@ -191,10 +195,10 @@ export default function TabInvestimento({
             />
           </div>
         </CardContent>
-      </Card>
+      </Card>}
 
-      {/* Imagem do Produto (mochila) */}
-      <Card>
+      {/* Imagem do Produto (mochila) — dev only */}
+      {isDev && <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
@@ -262,7 +266,7 @@ export default function TabInvestimento({
             />
           </div>
         </CardContent>
-      </Card>
+      </Card>}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

@@ -7,6 +7,7 @@ import {
   BarChart2,
   BookOpen,
   Users,
+  UserCog,
   Settings,
   LogOut,
   Menu,
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { label: 'Cursos',        href: '/admin/cursos',         icon: BookOpen,  minRole: 'consultor' as UserRole },
   { label: 'Leads',         href: '/admin/leads',          icon: Users,     minRole: 'gerente'   as UserRole },
   { label: 'Configurações', href: '/admin/configuracoes',  icon: Settings,  minRole: 'admin'     as UserRole },
+  { label: 'Usuários',      href: '/admin/usuarios',       icon: UserCog,   minRole: 'dev'       as UserRole },
 ];
 
 interface AdminShellProps {

@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, Save, Calendar, MapPin, Users, ArrowLeft, GripVertical } from 'lucide-react';
 import { createCourseDate, updateCourseDate, deleteCourseDate, upsertInstructor } from '@/lib/actions/courses';
 import type { CourseDate, ProgramDay, ProgramTopic, LocationExtra } from '@/types/course';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 
 // ─── Types ──────────────────────────────────────────────
 interface Props {
@@ -81,6 +82,7 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
   const [newInstructorName, setNewInstructorName] = useState('');
   const [newInstructorRole, setNewInstructorRole] = useState('');
   const [newInstructorBio, setNewInstructorBio] = useState('');
+  const [newInstructorPhotoUrl, setNewInstructorPhotoUrl] = useState('');
   const [creatingInstructor, setCreatingInstructor] = useState(false);
 
   // ── Save ──
@@ -225,7 +227,7 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
       name: newInstructorName.trim(),
       role: newInstructorRole.trim() || null,
       bio: newInstructorBio.trim() || null,
-      photo_url: null,
+      photo_url: newInstructorPhotoUrl.trim() || null,
       social_links: [],
       status: 'active',
     });
@@ -237,7 +239,7 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
         name: newInstructorName.trim(),
         role: newInstructorRole.trim() || null,
         bio: newInstructorBio.trim() || null,
-        photo_url: null,
+        photo_url: newInstructorPhotoUrl.trim() || null,
         social_links: [] as Array<{ platform: string; url: string; handle: string }>,
         status: 'active',
       };
@@ -246,6 +248,7 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
       setNewInstructorName('');
       setNewInstructorRole('');
       setNewInstructorBio('');
+      setNewInstructorPhotoUrl('');
       setShowNewInstructor(false);
     }
     setCreatingInstructor(false);
@@ -630,6 +633,15 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
                       placeholder="Breve biografia..."
                     />
                   </div>
+                  <ImageUploadField
+                    value={newInstructorPhotoUrl}
+                    onChange={setNewInstructorPhotoUrl}
+                    bucket="instructors"
+                    pathPrefix="photos/"
+                    label="Foto"
+                    shape="square"
+                    placeholder="URL da foto ou clique para fazer upload"
+                  />
                   <div className="flex gap-2">
                     <Button
                       size="sm"
