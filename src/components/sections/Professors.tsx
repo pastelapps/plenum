@@ -37,10 +37,10 @@ export default function Professors() {
                             <p className="text-white/60 text-sm">{professors[activeIndex].role}</p>
                         </div>
                         <div className="flex items-center gap-4 pt-6">
-                            <button onClick={prev} className="w-12 h-12 rounded-full bg-[#D4F34A] flex items-center justify-center text-black hover:bg-[#c5e43d] transition-colors">
+                            <button onClick={prev} className="w-12 h-12 rounded-full bg-[#D4F34A] flex items-center justify-center text-[#030D1F] hover:bg-[#c5e43d] transition-colors">
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
-                            <button onClick={next} className="w-12 h-12 rounded-full bg-[#D4F34A] flex items-center justify-center text-black hover:bg-[#c5e43d] transition-colors">
+                            <button onClick={next} className="w-12 h-12 rounded-full bg-[#D4F34A] flex items-center justify-center text-[#030D1F] hover:bg-[#c5e43d] transition-colors">
                                 <ChevronRight className="w-5 h-5" />
                             </button>
                         </div>
@@ -53,7 +53,7 @@ export default function Professors() {
                                 alt={professors[activeIndex].name}
                                 className="w-full h-full object-cover grayscale transition-all duration-500"
                             />
-                            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+                            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#030D1F]/80 to-transparent">
                                 <h3 className="text-3xl font-medium text-white mb-2">{professors[activeIndex].name}</h3>
                                 <p className="text-white/70 text-sm">{professors[activeIndex].brands}</p>
                             </div>

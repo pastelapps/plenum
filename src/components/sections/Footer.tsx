@@ -47,7 +47,7 @@ export default function Footer() {
     ];
 
     return (
-        <footer id="contato" ref={footerRef} className="footer relative bg-[#0D0D0D] overflow-hidden">
+        <footer id="contato" ref={footerRef} className="footer relative bg-[#030D1F] overflow-hidden">
             {/* Newsletter CTA section — like HA newsletter */}
             <div className="relative py-24 lg:py-32 overflow-hidden">
                 <div className="absolute inset-0">
@@ -56,7 +56,7 @@ export default function Footer() {
                         alt=""
                         className="w-full h-full object-cover opacity-20"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0D0D0D] via-[#0D0D0D]/80 to-[#0D0D0D]/60" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#030D1F] via-[#030D1F]/80 to-[#030D1F]/60" />
                 </div>
 
                 <div className="relative z-10 max-w-[1320px] mx-auto px-6 lg:px-10">
@@ -77,9 +77,9 @@ export default function Footer() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="QUERO ME INSCREVER"
-                                        className="flex-1 bg-[#C9A227] text-[#0D0D0D] placeholder-[#0D0D0D]/60 px-6 py-4 rounded-l-full text-sm font-semibold tracking-wider uppercase focus:outline-none"
+                                        className="flex-1 bg-[#C9A227] text-[#030D1F] placeholder-[#030D1F]/60 px-6 py-4 rounded-l-full text-sm font-semibold tracking-wider uppercase focus:outline-none"
                                     />
-                                    <button type="submit" className="bg-white text-[#0D0D0D] px-5 py-4 rounded-r-full hover:bg-white/90 transition-colors">
+                                    <button type="submit" className="bg-white text-[#030D1F] px-5 py-4 rounded-r-full hover:bg-white/90 transition-colors">
                                         <ArrowRight className="w-5 h-5" />
                                     </button>
                                 </form>

@@ -49,7 +49,7 @@ export default function Corporativa() {
                             Para Empresas
                         </span>
 
-                        <h2 className="text-display-lg text-[#0D0D0D] mb-6 leading-tight">
+                        <h2 className="text-display-lg text-[#030D1F] mb-6 leading-tight">
                             Educação corporativa sob medida para instituições
                         </h2>
 

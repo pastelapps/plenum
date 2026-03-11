@@ -28,7 +28,7 @@ export default function Differentials() {
             <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
                 <div className="text-center mb-16">
                     <h2
-                        className={`text-4xl lg:text-5xl font-medium text-black tracking-[-0.02em] transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+                        className={`text-4xl lg:text-5xl font-medium text-[#030D1F] tracking-[-0.02em] transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
                     >
                         Lorem ipsum dolor
                     </h2>
@@ -51,7 +51,7 @@ export default function Differentials() {
                             <div className="w-14 h-14 rounded-2xl bg-[#D4F34A]/10 flex items-center justify-center mb-6 group-hover:bg-[#D4F34A]/20 transition-colors">
                                 <item.icon className="w-7 h-7 text-[#0A0A0A]" />
                             </div>
-                            <h3 className="text-xl font-medium text-black mb-3">{item.title}</h3>
+                            <h3 className="text-xl font-medium text-[#030D1F] mb-3">{item.title}</h3>
                             <p className="text-gray-600 text-sm leading-relaxed">{item.desc}</p>
                         </div>
                     ))}

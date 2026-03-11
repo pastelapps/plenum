@@ -62,7 +62,7 @@ export default function Courses() {
                                 alt={course.title}
                                 className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#030D1F]/80 via-[#030D1F]/30 to-transparent" />
                             <div className="absolute top-4 left-4">
                                 <span className="px-3 py-1 bg-white/20 backdrop-blur-sm text-white text-xs font-medium rounded-full">
                                     {course.tag}

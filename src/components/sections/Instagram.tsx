@@ -29,7 +29,7 @@ export default function Instagram() {
         <section ref={sectionRef} className="bg-[#F1F1F1] py-20 lg:py-28">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
                 <div className="text-center mb-12">
-                    <h2 className="text-display-lg text-[#0D0D0D] mb-4">@PLENUMBRASIL</h2>
+                    <h2 className="text-display-lg text-[#030D1F] mb-4">@PLENUMBRASIL</h2>
                     <p className="text-sm italic text-[#555] tracking-wide uppercase">
                         Acompanhe nossa jornada
                     </p>
@@ -43,7 +43,7 @@ export default function Instagram() {
                             className="insta-item relative aspect-square rounded-[20px] overflow-hidden group"
                         >
                             <img src={img} alt="" className="w-full h-full object-cover transform-gpu group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-[#030D1F]/0 group-hover:bg-[#030D1F]/40 transition-colors duration-300 flex items-center justify-center">
                                 <InstagramIcon className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             </div>
                         </a>

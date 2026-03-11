@@ -35,7 +35,7 @@ export default function Testimonials() {
                             <span className="text-xs align-top">™</span>
                         </div>
                         <h2
-                            className={`text-4xl lg:text-5xl font-medium text-black tracking-[-0.02em] transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+                            className={`text-4xl lg:text-5xl font-medium text-[#030D1F] tracking-[-0.02em] transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
                             style={{ transitionDelay: "100ms" }}
                         >
                             Lorem ipsum dolor<br />sit amet elit

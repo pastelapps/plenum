@@ -40,9 +40,9 @@ export default function VideoShowcase() {
                         alt="Video showcase"
                         className="w-full h-full object-cover absolute inset-0"
                     />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[#030D1F]/40 flex items-center justify-center">
                         <button className="w-20 h-20 rounded-full bg-[#D4F34A] flex items-center justify-center hover:bg-[#c5e43d] transition-all duration-300 hover:scale-110">
-                            <Play className="w-8 h-8 text-black ml-1" />
+                            <Play className="w-8 h-8 text-[#030D1F] ml-1" />
                         </button>
                     </div>
                 </div>

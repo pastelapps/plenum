@@ -27,12 +27,12 @@ export default function WhyHuman() {
                         <div
                             className={`flex items-center gap-1 text-3xl mb-6 transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
                         >
-                            <span className="font-semibold text-black">/H</span>
-                            <span className="font-normal text-black">Academy</span>
+                            <span className="font-semibold text-[#030D1F]">/H</span>
+                            <span className="font-normal text-[#030D1F]">Academy</span>
                             <span className="text-xs text-black/60 align-top">™</span>
                         </div>
                         <h2
-                            className={`text-4xl lg:text-5xl font-medium text-black tracking-[-0.02em] mb-6 transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
+                            className={`text-4xl lg:text-5xl font-medium text-[#030D1F] tracking-[-0.02em] mb-6 transition-all duration-600 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"}`}
                             style={{ transitionDelay: "100ms" }}
                         >
                             Lorem ipsum dolor<br />sit amet elit
@@ -51,8 +51,8 @@ export default function WhyHuman() {
                     >
                         {stats.map((stat, i) => (
                             <div key={i} className="text-center">
-                                <div className="w-12 h-12 mx-auto mb-4 rounded-full border border-dashed border-black/20 animate-spin-slow" />
-                                <p className="text-3xl font-medium text-black">{stat.number}</p>
+                                <div className="w-12 h-12 mx-auto mb-4 rounded-full border border-dashed border-[#030D1F]/20 animate-spin-slow" />
+                                <p className="text-3xl font-medium text-[#030D1F]">{stat.number}</p>
                                 <p className="text-xs text-gray-500 uppercase tracking-wider mt-2">{stat.label}</p>
                             </div>
                         ))}

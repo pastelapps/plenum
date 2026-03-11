@@ -76,46 +76,23 @@ export default function SocialProof() {
     const sectionRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-        let ctx = gsap.matchMedia ? gsap.matchMedia() : null;
-
-        if (ctx) {
-            ctx.add("(min-width: 1px)", () => {
-                gsap.from(".stat-item", {
-                    opacity: 0, y: 40, duration: 0.7, stagger: 0.1, ease: "power3.out",
-                    scrollTrigger: { trigger: ".stats-grid", start: "top 80%" }
-                });
-
-                gsap.from(".proof-title", {
-                    opacity: 0, y: 30, duration: 0.7, ease: "power3.out",
-                    scrollTrigger: { trigger: ".social-proof-section", start: "top 80%" }
-                });
-            });
-        } else {
-            // Fallback for older GSAP versions
-            let animations: gsap.core.Tween[] = [];
-
-            animations.push(gsap.from(".stat-item", {
+        const ctx = gsap.context(() => {
+            gsap.from(".stat-item", {
                 opacity: 0, y: 40, duration: 0.7, stagger: 0.1, ease: "power3.out",
                 scrollTrigger: { trigger: ".stats-grid", start: "top 80%" }
-            }));
+            });
 
-            animations.push(gsap.from(".proof-title", {
+            gsap.from(".proof-title", {
                 opacity: 0, y: 30, duration: 0.7, ease: "power3.out",
                 scrollTrigger: { trigger: ".social-proof-section", start: "top 80%" }
-            }));
+            });
+        }, sectionRef);
 
-            return () => {
-                animations.forEach(a => a.kill());
-            };
-        }
-
-        return () => {
-            if (ctx) ctx.revert();
-        };
+        return () => ctx.revert();
     }, []);
 
     return (
-        <section id="sobre" ref={sectionRef} className="social-proof-section relative bg-[#0D0D0D] py-24 lg:py-36 overflow-hidden grain-overlay">
+        <section id="sobre" ref={sectionRef} className="social-proof-section relative bg-[#030D1F] py-24 lg:py-36 overflow-hidden grain-overlay">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10 relative z-10">
                 {/* Section title */}
                 <div className="proof-title text-center mb-16 lg:mb-24">

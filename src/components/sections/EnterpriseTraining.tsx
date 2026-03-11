@@ -72,11 +72,11 @@ export default function EnterpriseTraining() {
                     <div className="absolute inset-0">
                         <img src={testimonials[activeIndex].image} alt="" className="w-full h-full object-cover" style={{ transform: "scale(1.05)" }} />
                     </div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#030D1F]/80 via-[#030D1F]/50 to-transparent" />
                     <div className="relative grid lg:grid-cols-2 gap-8 p-8 lg:p-12">
                         <div className="glass-dark rounded-2xl p-6 lg:p-8">
                             <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-black font-bold">{testimonials[activeIndex].logo}</div>
+                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#030D1F] font-bold">{testimonials[activeIndex].logo}</div>
                                 <span className="text-white font-medium">{testimonials[activeIndex].company}</span>
                             </div>
                             <p className="text-white/90 text-sm leading-relaxed mb-6">&ldquo;{testimonials[activeIndex].quote}&rdquo;</p>

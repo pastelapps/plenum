@@ -8,22 +8,25 @@ const POSTS = [
         id: 1,
         title: "Como a IA está transformando a gestão pública brasileira",
         category: "TECNOLOGIA",
-        date: "20 Fev 2026",
+        date: "10 Mar 2026",
         image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop",
+        slug: "como-ia-esta-transformando-gestao-publica",
     },
     {
         id: 2,
         title: "Nova Lei de Licitações: o que mudou e como se preparar",
         category: "LEGISLAÇÃO",
-        date: "15 Fev 2026",
+        date: "5 Mar 2026",
         image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=800&auto=format&fit=crop",
+        slug: "nova-lei-licitacoes-o-que-mudou",
     },
     {
         id: 3,
         title: "5 competências essenciais para líderes públicos em 2026",
         category: "LIDERANÇA",
-        date: "10 Fev 2026",
+        date: "28 Fev 2026",
         image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800&auto=format&fit=crop",
+        slug: "5-competencias-lideres-publicos-2026",
     },
 ];
 
@@ -56,7 +59,7 @@ export default function Blog() {
         <section id="blog" ref={sectionRef} className="bg-[#F1F1F1] py-20 lg:py-32">
             <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
                 <div className="text-center mb-14 lg:mb-20">
-                    <h2 className="text-display-lg text-[#0D0D0D] mb-4">INSIGHTS</h2>
+                    <h2 className="text-display-lg text-[#030D1F] mb-4">INSIGHTS</h2>
                     <p className="text-sm italic text-[#555] tracking-wide uppercase">
                         Conteúdos para quem quer liderar a transformação
                     </p>
@@ -64,7 +67,7 @@ export default function Blog() {
 
                 <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
                     {POSTS.map((post) => (
-                        <a key={post.id} href="#" className="blog-card group block rounded-[24px] overflow-hidden bg-white/60 border border-black/[0.04] hover:shadow-xl transition-shadow">
+                        <a key={post.id} href={`/blog/${post.slug}`} className="blog-card group block rounded-[24px] overflow-hidden bg-white/60 border border-[#030D1F]/[0.04] hover:shadow-xl transition-shadow">
                             <div className="aspect-[16/10] overflow-hidden">
                                 <img
                                     src={post.image}
@@ -79,10 +82,10 @@ export default function Blog() {
                                     </span>
                                     <span className="text-[10px] text-[#999]">{post.date}</span>
                                 </div>
-                                <h3 className="text-lg font-display font-medium text-[#0D0D0D] mb-4 leading-snug group-hover:text-[#C9A227] transition-colors">
+                                <h3 className="text-lg font-display font-medium text-[#030D1F] mb-4 leading-snug group-hover:text-[#C9A227] transition-colors">
                                     {post.title}
                                 </h3>
-                                <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#0D0D0D] uppercase tracking-wider">
+                                <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#030D1F] uppercase tracking-wider">
                                     Ler mais <ArrowRight className="w-3 h-3" />
                                 </span>
                             </div>

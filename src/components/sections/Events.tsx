@@ -1,275 +1,164 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 
 const EVENTS = [
     {
         id: 1,
-        title: "Congresso Nacional de Gestao Publica",
-        category: "CONGRESSO",
-        badge: "PLENUM",
-        description: "Debates estrategicos sobre inovacao, lideranca e compliance no setor publico.",
-        cta: "Ver Agenda",
+        title: "Congresso Nacional de Gestão Pública",
+        badge: "CONGRESSO",
+        description: "Debates estratégicos sobre inovação, liderança e compliance no setor público.",
         image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop",
+        url: "#",
     },
     {
         id: 2,
-        title: "Seminario de Licitacoes Sustentaveis",
-        category: "SEMINARIO",
-        badge: "PLENUM",
-        description: "Conteudo pratico para modernizar contratacoes publicas com responsabilidade.",
-        cta: "Inscreva-se",
+        title: "Seminário de Licitações Sustentáveis",
+        badge: "SEMINÁRIO",
+        description: "Conteúdo prático para modernizar contratações públicas com responsabilidade.",
         image: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=2070&auto=format&fit=crop",
+        url: "#",
     },
     {
         id: 3,
-        title: "Imersao Lideranca GovTech",
-        category: "IMERSAO",
-        badge: "PLENUM",
-        description: "Mentorias e cases reais para lideres que querem acelerar transformacao digital.",
-        cta: "Conhecer Imersao",
+        title: "Imersão Liderança GovTech",
+        badge: "IMERSÃO",
+        description: "Mentorias e cases reais para líderes que querem acelerar transformação digital.",
         image: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop",
+        url: "#",
     },
     {
         id: 4,
-        title: "Forum de Inovacao no Setor Publico",
-        category: "FORUM",
-        badge: "PLENUM",
-        description: "Conexoes de alto nivel entre governo, academia e ecossistema de tecnologia.",
-        cta: "Ver Evento",
+        title: "Fórum de Inovação no Setor Público",
+        badge: "FÓRUM",
+        description: "Conexões de alto nível entre governo, academia e ecossistema de tecnologia.",
         image: "https://images.unsplash.com/photo-1577985043696-8bd54d9f093f?q=80&w=2070&auto=format&fit=crop",
+        url: "#",
     },
     {
         id: 5,
-        title: "Ciclo Executivo de Compras Publicas",
-        category: "CICLO",
-        badge: "PLENUM",
-        description: "Trilhas executivas para ganho de produtividade e seguranca juridica nas aquisicoes.",
-        cta: "Acessar Programa",
+        title: "Ciclo Executivo de Compras Públicas",
+        badge: "CICLO EXECUTIVO",
+        description: "Trilhas executivas para ganho de produtividade e segurança jurídica nas aquisições.",
         image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=2070&auto=format&fit=crop",
-    },
-    {
-        id: 6,
-        title: "Encontro Nacional de Gestao por Dados",
-        category: "ENCONTRO",
-        badge: "PLENUM",
-        description: "Aplicacoes de IA e analytics para tomada de decisao orientada por evidencia.",
-        cta: "Quero Participar",
-        image: "https://images.unsplash.com/photo-1552581234-26160f608093?q=80&w=2070&auto=format&fit=crop",
+        url: "#",
     },
 ];
 
 export default function Events() {
     const sectionRef = useRef<HTMLElement>(null);
-    const [eventsList, setEventsList] = useState(EVENTS);
+    const [current, setCurrent] = useState(0);
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-    // Initial section reveal animation
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.from(".events-header", {
-                opacity: 0,
-                y: 40,
-                duration: 0.7,
-                ease: "power3.out",
-                scrollTrigger: {
-                    trigger: ".events-section",
-                    start: "top 80%"
-                }
-            });
-            gsap.from(".events-carousel-container", {
-                opacity: 0,
-                y: 60,
-                duration: 0.9,
-                ease: "power3.out",
-                scrollTrigger: {
-                    trigger: ".events-carousel-container",
-                    start: "top 80%"
-                }
-            });
-        }, sectionRef);
-
-        return () => ctx.revert();
-    }, []);
+    // Sem animação de entrada — conteúdo já visível ao carregar
+    useEffect(() => {}, []);
 
     const nextSlide = useCallback(() => {
-        setEventsList(prev => [...prev.slice(1), prev[0]]);
+        setCurrent(prev => (prev + 1) % EVENTS.length);
     }, []);
 
     const prevSlide = useCallback(() => {
-        setEventsList(prev => [prev[prev.length - 1], ...prev.slice(0, prev.length - 1)]);
+        setCurrent(prev => (prev - 1 + EVENTS.length) % EVENTS.length);
     }, []);
 
-    // Auto play (optional, based on previous logic)
-    useEffect(() => {
-        const interval = window.setInterval(() => {
-            nextSlide();
-        }, 5500);
-        return () => window.clearInterval(interval);
+    const resetTimer = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(nextSlide, 5500);
     }, [nextSlide]);
 
+    useEffect(() => {
+        resetTimer();
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    }, [resetTimer]);
+
     return (
-        <section id="eventos" ref={sectionRef} className="events-section bg-[#F1F1F1] py-20 lg:py-32 overflow-hidden">
-            <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
-                <div className="events-header text-center mb-16 lg:mb-20">
-                    <h2 className="text-display-lg text-[#0D0D0D] mb-4">NOSSOS EVENTOS</h2>
-                    <p className="text-sm italic text-[#555] tracking-wide uppercase">
-                        Experiências que conectam e transformam
-                    </p>
-                </div>
+        <section id="eventos" ref={sectionRef} className="events-section overflow-hidden relative bg-[#030D1F]">
+            {/* Slideshow — full width, edge to edge, directly below hero */}
+            <div className="events-slideshow relative w-full h-[520px] md:h-[580px] lg:h-[700px] overflow-hidden">
+                    {/* Slides */}
+                    {EVENTS.map((event, i) => (
+                        <div
+                            key={event.id}
+                            className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+                                i === current
+                                    ? "opacity-100 scale-100"
+                                    : "opacity-0 scale-105"
+                            }`}
+                            style={{ backgroundImage: `url(${event.image})`, backgroundSize: "cover", backgroundPosition: "center" }}
+                        >
+                            {/* Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#030D1F]/85 via-[#030D1F]/50 to-[#030D1F]/20" />
 
-                <div className="events-carousel-container relative w-full h-[460px] md:h-[520px] rounded-[26px] bg-[#0D0D0D] shadow-[0_30px_55px_rgba(0,0,0,0.2)]">
-                    <div className="absolute inset-0 overflow-hidden rounded-[26px]">
-                        <div id="slide" className="w-full h-full relative">
-                            {eventsList.map((event) => (
-                                <div
-                                    key={event.id}
-                                    className="item absolute bg-cover bg-center shadow-[0_18px_40px_rgba(0,0,0,0.4)] transition-all duration-500 ease-in-out"
-                                    style={{ backgroundImage: `url('${event.image}')` }}
-                                >
-                                    {/* The overlay is only really needed (or visible) for the background item(s) */}
-                                    <div className="item-overlay absolute inset-0 bg-[radial-gradient(circle_at_60%_55%,rgba(120,170,255,0.2),transparent_35%),linear-gradient(90deg,rgba(6,10,12,0.9)_0%,rgba(8,12,16,0.76)_45%,rgba(8,12,16,0.48)_70%,rgba(8,12,16,0.7)_100%)] opacity-0 transition-opacity duration-500 pointer-events-none" />
+                            {/* Content */}
+                            <div className={`absolute inset-0 flex flex-col justify-center px-8 md:px-14 lg:px-20 transition-all duration-500 delay-200 ${
+                                i === current ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+                            }`}>
+                                <div className="max-w-[580px]">
+                                    {/* Badge */}
+                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/25 rounded-full text-[11px] font-semibold tracking-[0.2em] text-white uppercase mb-5">
+                                        <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
+                                        {event.badge}
+                                    </span>
 
-                                    <div className="content absolute top-1/2 left-8 md:left-14 -translate-y-1/2 max-w-[460px] hidden text-white z-20">
-                                        <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/25 rounded-full text-[11px] font-semibold tracking-[0.2em] text-white uppercase mb-4 md:mb-5 badge">
-                                            <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
-                                            {event.badge}
-                                        </span>
-                                        <h3 className="text-[32px] md:text-[44px] leading-[0.98] font-display font-semibold text-white mb-2 md:mb-3 uppercase category">
-                                            {event.category}
-                                        </h3>
-                                        <p className="text-[20px] md:text-[30px] leading-[1.25] text-white/86 mb-4 md:mb-6 description">
-                                            {event.description}
-                                        </p>
-                                        <a
-                                            href="#"
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 md:px-7 md:py-3 rounded-[12px] bg-white/80 hover:bg-white text-[#0F1114] text-[20px] md:text-[28px] font-semibold transition-all cta-btn"
-                                        >
-                                            {event.cta}
-                                        </a>
-                                    </div>
+                                    {/* Title */}
+                                    <h3 className="text-[28px] md:text-[40px] lg:text-[50px] leading-[1.02] font-display font-semibold text-white mb-4 uppercase">
+                                        {event.title}
+                                    </h3>
+
+                                    {/* Description */}
+                                    <p className="text-base md:text-lg text-white/65 mb-8 leading-relaxed max-w-md">
+                                        {event.description}
+                                    </p>
+
+                                    {/* CTA */}
+                                    <a
+                                        href={event.url}
+                                        className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#C9A227] hover:bg-[#e4bc44] text-[#030D1F] text-sm font-semibold uppercase tracking-wide transition-all hover:shadow-[0_8px_30px_rgba(201,162,39,0.3)]"
+                                    >
+                                        Mais Detalhes
+                                        <ArrowRight className="w-4 h-4" />
+                                    </a>
                                 </div>
-                            ))}
+                            </div>
                         </div>
+                    ))}
+
+                    {/* Navigation arrows */}
+                    <button
+                        onClick={() => { prevSlide(); resetTimer(); }}
+                        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-white/25 bg-[#030D1F]/40 backdrop-blur-sm hover:bg-white/15 flex items-center justify-center transition-all"
+                        aria-label="Evento anterior"
+                    >
+                        <ArrowLeft className="w-5 h-5 text-white" />
+                    </button>
+                    <button
+                        onClick={() => { nextSlide(); resetTimer(); }}
+                        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-white/25 bg-[#030D1F]/40 backdrop-blur-sm hover:bg-white/15 flex items-center justify-center transition-all"
+                        aria-label="Próximo evento"
+                    >
+                        <ArrowRight className="w-5 h-5 text-white" />
+                    </button>
+
+                    {/* Counter */}
+                    <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-20 text-white/50 text-sm font-display font-medium tracking-widest">
+                        0{current + 1} / 0{EVENTS.length}
                     </div>
 
-                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3">
-                        <button
-                            onClick={prevSlide}
-                            className="w-10 h-10 rounded-[10px] border-2 border-black/50 bg-white/65 hover:bg-white transition-all flex items-center justify-center pointer-events-auto"
-                            aria-label="Evento anterior"
-                        >
-                            <ArrowLeft className="w-4 h-4 text-black" />
-                        </button>
-                        <button
-                            onClick={nextSlide}
-                            className="w-10 h-10 rounded-[10px] border-2 border-black/50 bg-white/65 hover:bg-white transition-all flex items-center justify-center pointer-events-auto"
-                            aria-label="Próximo evento"
-                        >
-                            <ArrowRight className="w-4 h-4 text-black" />
-                        </button>
+                    {/* Progress dots */}
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+                        {EVENTS.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => { setCurrent(idx); resetTimer(); }}
+                                className={`h-[3px] rounded-full transition-all duration-300 ${
+                                    idx === current ? "w-8 bg-[#C9A227]" : "w-3 bg-white/30 hover:bg-white/50"
+                                }`}
+                                aria-label={`Ir para evento ${idx + 1}`}
+                            />
+                        ))}
                     </div>
                 </div>
-
-                <style dangerouslySetInnerHTML={{
-                    __html: `
-                    #slide .item {
-                        top: 50%;
-                        transform: translateY(-50%);
-                        width: 200px;
-                        height: 280px;
-                        border-radius: 24px;
-                    }
-                    #slide .item:nth-child(1),
-                    #slide .item:nth-child(2) {
-                        top: 0;
-                        left: 0;
-                        transform: translate(0, 0);
-                        border-radius: 0;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    /* Item 2 is the active background */
-                    #slide .item:nth-child(2) .item-overlay {
-                        opacity: 1;
-                    }
-                    #slide .item:nth-child(2) .content {
-                        display: block;
-                    }
-
-                    /* Desktop positioning for cards */
-                    @media (min-width: 1025px) {
-                        #slide .item:nth-child(3) {
-                            left: 60%;
-                        }
-                        #slide .item:nth-child(4) {
-                            left: calc(60% + 220px);
-                        }
-                        #slide .item:nth-child(5) {
-                            left: calc(60% + 440px);
-                        }
-                        #slide .item:nth-child(n + 6) {
-                            left: calc(60% + 660px);
-                            opacity: 0;
-                        }
-                    }
-
-                    /* Tablet positioning */
-                    @media (max-width: 1024px) and (min-width: 768px) {
-                        #slide .item:nth-child(3) { left: 55%; }
-                        #slide .item:nth-child(4) { left: calc(55% + 220px); }
-                        #slide .item:nth-child(5) { left: calc(55% + 440px); }
-                        #slide .item:nth-child(n + 6) { left: calc(55% + 660px); opacity: 0; }
-                    }
-
-                    /* Mobile positioning */
-                    @media (max-width: 767px) {
-                        #slide .item {
-                            width: 130px;
-                            height: 180px;
-                        }
-                        #slide .item:nth-child(3) { left: 10%; top: calc(100% - 130px); transform: translate(0, -50%); z-index: 10; }
-                        #slide .item:nth-child(4) { left: calc(10% + 140px); top: calc(100% - 130px); transform: translate(0, -50%); z-index: 10; }
-                        #slide .item:nth-child(5) { left: calc(10% + 280px); top: calc(100% - 130px); transform: translate(0, -50%); z-index: 10; }
-                        #slide .item:nth-child(n + 6) { left: calc(10% + 420px); top: calc(100% - 130px); transform: translate(0, -50%); opacity: 0; z-index: 10; }
-                        
-                        .events-carousel-container #slide .content {
-                            top: 35%;
-                        }
-                    }
-
-                    /* Animations for content elements inside the active item */
-                    .content .badge {
-                        opacity: 0;
-                        animation: animateText 0.8s ease-in-out 1 forwards;
-                    }
-                    .content .category {
-                        opacity: 0;
-                        animation: animateText 0.8s ease-in-out 0.2s 1 forwards;
-                    }
-                    .content .description {
-                        opacity: 0;
-                        animation: animateText 0.8s ease-in-out 0.4s 1 forwards;
-                    }
-                    .content .cta-btn {
-                        opacity: 0;
-                        animation: animateText 0.8s ease-in-out 0.6s 1 forwards;
-                    }
-
-                    @keyframes animateText {
-                        from {
-                            opacity: 0;
-                            transform: translate(0, 40px);
-                            filter: blur(5px);
-                        }
-                        to {
-                            opacity: 1;
-                            transform: translate(0, 0);
-                            filter: blur(0);
-                        }
-                    }
-                ` }} />
-            </div>
         </section>
     );
 }

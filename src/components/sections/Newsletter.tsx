@@ -30,7 +30,7 @@ export default function Newsletter() {
                     className={`w-full h-full object-cover transition-all duration-1000 ${visible ? "scale-100" : "scale-110"}`}
                 />
             </div>
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-[#030D1F]/40" />
 
             <div className="relative max-w-[1400px] mx-auto px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -60,7 +60,7 @@ export default function Newsletter() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="LOREM IPSUM"
-                                className="flex-1 px-4 py-3 bg-transparent text-black placeholder:text-black/60 text-sm font-medium focus:outline-none"
+                                className="flex-1 px-4 py-3 bg-transparent text-[#030D1F] placeholder:text-[#030D1F]/60 text-sm font-medium focus:outline-none"
                                 required
                             />
                             <button
