@@ -1,15 +1,33 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { type UserRole, hasMinRole } from '@/types/user-roles';
+
+/**
+ * Route access matrix — routes not listed default to 'consultor' (any authenticated user).
+ * Hierarchy: consultor < gerente < admin < dev
+ */
+const ROUTE_ACCESS: Array<{ prefix: string; minRole: UserRole }> = [
+  { prefix: '/admin/configuracoes',  minRole: 'admin'   },
+  { prefix: '/admin/leads',          minRole: 'gerente' },
+  { prefix: '/admin/cursos/novo',    minRole: 'gerente' },
+  { prefix: '/admin/cursos/',        minRole: 'gerente' }, // edit/turmas sub-routes
+];
+
+function requiredRole(pathname: string): UserRole {
+  for (const rule of ROUTE_ACCESS) {
+    if (pathname.startsWith(rule.prefix)) return rule.minRole;
+  }
+  return 'consultor';
+}
 
 /**
  * Middleware that:
  * 1. Refreshes Supabase auth session on every request
  * 2. Protects /admin/* routes (except /admin/login) — redirects to login if not authenticated
+ * 3. Enforces role-based access: redirects to /admin if role is insufficient
  */
 export async function middleware(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,9 +41,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -34,14 +50,10 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  // Refresh session (important for keeping auth alive)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
-  // Protect /admin routes (except /admin/login)
+  // ── Auth guard ─────────────────────────────────────────────────────────
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -49,9 +61,29 @@ export async function middleware(request: NextRequest) {
       url.searchParams.set('redirectTo', pathname);
       return NextResponse.redirect(url);
     }
+
+    // ── Role guard (only for restricted routes) ────────────────────────
+    const minRole = requiredRole(pathname);
+    if (minRole !== 'consultor') {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      // Users without a profile are treated as 'dev' (pre-existing admins)
+      const userRole: UserRole = (profile?.role as UserRole) ?? 'dev';
+
+      if (!hasMinRole(userRole, minRole)) {
+        const url = request.nextUrl.clone();
+        url.pathname = '/admin';
+        url.searchParams.set('error', 'unauthorized');
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
-  // If logged in and trying to access /admin/login, redirect to /admin
+  // Already logged in → skip login page
   if (pathname === '/admin/login' && user) {
     const url = request.nextUrl.clone();
     url.pathname = '/admin';
@@ -63,13 +95,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder assets
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp4|webm)$).*)',
   ],
 };

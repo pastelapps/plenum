@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, Save, Calendar, MapPin, Users, ArrowLeft, GripVertical } from 'lucide-react';
 import { createCourseDate, updateCourseDate, deleteCourseDate, upsertInstructor } from '@/lib/actions/courses';
 import type { CourseDate, ProgramDay, ProgramTopic, LocationExtra } from '@/types/course';
-import ImageUploadField from './ImageUploadField';
+import ImageUploadField from '@/components/admin/ImageUploadField';
 
 // ─── Types ──────────────────────────────────────────────
 interface Props {
@@ -227,7 +227,7 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
       name: newInstructorName.trim(),
       role: newInstructorRole.trim() || null,
       bio: newInstructorBio.trim() || null,
-      photo_url: newInstructorPhotoUrl || null,
+      photo_url: newInstructorPhotoUrl.trim() || null,
       social_links: [],
       status: 'active',
     });
@@ -239,7 +239,7 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
         name: newInstructorName.trim(),
         role: newInstructorRole.trim() || null,
         bio: newInstructorBio.trim() || null,
-        photo_url: newInstructorPhotoUrl || null,
+        photo_url: newInstructorPhotoUrl.trim() || null,
         social_links: [] as Array<{ platform: string; url: string; handle: string }>,
         status: 'active',
       };
@@ -634,13 +634,13 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
                     />
                   </div>
                   <ImageUploadField
-                    label="Foto do Instrutor"
                     value={newInstructorPhotoUrl}
                     onChange={setNewInstructorPhotoUrl}
                     bucket="instructors"
                     pathPrefix="photos/"
+                    label="Foto"
                     shape="square"
-                    placeholder="/foto-instrutor.jpg ou URL completa"
+                    placeholder="URL da foto ou clique para fazer upload"
                   />
                   <div className="flex gap-2">
                     <Button
@@ -658,7 +658,6 @@ export default function TurmaForm({ courseId, turma, instructors: initialInstruc
                         setNewInstructorName('');
                         setNewInstructorRole('');
                         setNewInstructorBio('');
-                        setNewInstructorPhotoUrl('');
                       }}
                     >
                       Cancelar

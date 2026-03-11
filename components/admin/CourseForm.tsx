@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Save, ExternalLink } from 'lucide-react';
 import { createCourse, updateCourse, revalidateCoursePage } from '@/lib/actions/courses';
 import type { Course } from '@/types/course';
+import type { UserRole } from '@/types/user-roles';
 
 import TabGeral from './course-tabs/TabGeral';
 import TabHero from './course-tabs/TabHero';
@@ -21,9 +22,10 @@ import TabSeo from './course-tabs/TabSeo';
 interface Props {
   course?: Course;
   designSystems: Array<{ id: string; name: string; is_default: boolean }>;
+  role?: UserRole;
 }
 
-export default function CourseForm({ course, designSystems }: Props) {
+export default function CourseForm({ course, designSystems, role = 'dev' }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isEditing = !!course;
@@ -168,7 +170,7 @@ export default function CourseForm({ course, designSystems }: Props) {
             <TabsTrigger value="publico">Público</TabsTrigger>
             <TabsTrigger value="investimento">Investimento</TabsTrigger>
             <TabsTrigger value="depoimentos">Depoimentos</TabsTrigger>
-            <TabsTrigger value="midias">Mídias</TabsTrigger>
+            {role === 'dev' && <TabsTrigger value="midias">Mídias</TabsTrigger>}
             <TabsTrigger value="seo">SEO</TabsTrigger>
           </TabsList>
 
@@ -199,6 +201,7 @@ export default function CourseForm({ course, designSystems }: Props) {
             whatsappNumber={whatsappNumber} setWhatsappNumber={setWhatsappNumber}
             whatsappMessage={whatsappMessage} setWhatsappMessage={setWhatsappMessage}
             designSystems={designSystems}
+            role={role}
           />
         </TabsContent>
 
@@ -209,6 +212,7 @@ export default function CourseForm({ course, designSystems }: Props) {
             heroFramesPath={heroFramesPath} setHeroFramesPath={setHeroFramesPath}
             heroFrameCount={heroFrameCount} setHeroFrameCount={setHeroFrameCount}
             heroFrameExt={heroFrameExt} setHeroFrameExt={setHeroFrameExt}
+            role={role}
           />
         </TabsContent>
 
@@ -224,6 +228,7 @@ export default function CourseForm({ course, designSystems }: Props) {
           <TabPublico
             audienceCards={audienceCards} setAudienceCards={setAudienceCards}
             audienceImages={audienceImages} setAudienceImages={setAudienceImages}
+            role={role}
           />
         </TabsContent>
 
@@ -235,6 +240,7 @@ export default function CourseForm({ course, designSystems }: Props) {
             backgroundImageUrl={backgroundImageUrl} setBackgroundImageUrl={setBackgroundImageUrl}
             productImageUrl={productImageUrl} setProductImageUrl={setProductImageUrl}
             courseSlug={slug}
+            role={role}
           />
         </TabsContent>
 

@@ -9,7 +9,6 @@ import { Plus, Trash2, Upload, ImageIcon, X, FileText } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import type { PartnerLogo } from '@/types/course';
 import GeneratePdfButton from '../GeneratePdfButton';
-import ImageUploadField from '../ImageUploadField';
 
 interface Props {
   partnerLogos: PartnerLogo[];
@@ -197,40 +196,36 @@ export default function TabMidias({
             Logos exibidos na seção de parceiros/apoiadores da landing page.
           </p>
           {partnerLogos.map((logo, i) => (
-            <div key={i} className="p-3 rounded-lg border bg-gray-50 space-y-2">
-              <div className="flex items-center gap-2">
-                <Input
-                  value={logo.name}
-                  onChange={(e) => updateLogo(i, 'name', e.target.value)}
-                  placeholder="Nome do parceiro"
-                  className="flex-1"
-                />
-                <Input
-                  value={logo.width || ''}
-                  onChange={(e) => updateLogo(i, 'width', e.target.value ? parseInt(e.target.value) : 0)}
-                  placeholder="W"
-                  className="w-16"
-                  type="number"
-                />
-                <Input
-                  value={logo.height || ''}
-                  onChange={(e) => updateLogo(i, 'height', e.target.value ? parseInt(e.target.value) : 0)}
-                  placeholder="H"
-                  className="w-16"
-                  type="number"
-                />
-                <Button variant="ghost" size="sm" onClick={() => removeLogo(i)}>
-                  <Trash2 className="w-4 h-4 text-red-500" />
-                </Button>
-              </div>
-              <ImageUploadField
-                value={logo.url}
-                onChange={(url) => updateLogo(i, 'url', url)}
-                bucket="course-covers"
-                pathPrefix={`partners/${courseSlug || 'logo'}-`}
-                shape="wide"
-                placeholder="URL da imagem do logo"
+            <div key={i} className="flex items-center gap-2">
+              <Input
+                value={logo.name}
+                onChange={(e) => updateLogo(i, 'name', e.target.value)}
+                placeholder="Nome"
+                className="w-36"
               />
+              <Input
+                value={logo.url}
+                onChange={(e) => updateLogo(i, 'url', e.target.value)}
+                placeholder="URL da imagem"
+                className="flex-1"
+              />
+              <Input
+                value={logo.width || ''}
+                onChange={(e) => updateLogo(i, 'width', e.target.value ? parseInt(e.target.value) : 0)}
+                placeholder="W"
+                className="w-16"
+                type="number"
+              />
+              <Input
+                value={logo.height || ''}
+                onChange={(e) => updateLogo(i, 'height', e.target.value ? parseInt(e.target.value) : 0)}
+                placeholder="H"
+                className="w-16"
+                type="number"
+              />
+              <Button variant="ghost" size="sm" onClick={() => removeLogo(i)}>
+                <Trash2 className="w-4 h-4 text-red-500" />
+              </Button>
             </div>
           ))}
           {partnerLogos.length === 0 && (

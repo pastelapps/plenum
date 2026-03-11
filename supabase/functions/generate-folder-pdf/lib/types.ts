@@ -1,6 +1,3 @@
-import type { ImageCache } from './images.ts';
-export type { ImageCache };
-
 // ─── PDF Constants ───────────────────────────────────────
 export const PAGE_W = 1240;  // A4 @ ~150dpi
 export const PAGE_H = 1754;
@@ -120,5 +117,4 @@ export interface PdfContext {
   ds: DesignSystemData;
   company: CompanyData;
   siteBaseUrl: string;
-  imageCache: ImageCache; // pre-fetched images as base64 data URIs
 }

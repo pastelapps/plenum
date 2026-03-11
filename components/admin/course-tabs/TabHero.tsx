@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Plus, Trash2 } from 'lucide-react';
 import type { TitlePart, HeroBadge } from '@/types/course';
+import type { UserRole } from '@/types/user-roles';
 
 interface Props {
   titleParts: TitlePart[]; setTitleParts: (v: TitlePart[]) => void;
@@ -20,6 +21,7 @@ interface Props {
   heroFramesPath: string; setHeroFramesPath: (v: string) => void;
   heroFrameCount: number; setHeroFrameCount: (v: number) => void;
   heroFrameExt: string; setHeroFrameExt: (v: string) => void;
+  role?: UserRole;
 }
 
 export default function TabHero({
@@ -28,7 +30,9 @@ export default function TabHero({
   heroFramesPath, setHeroFramesPath,
   heroFrameCount, setHeroFrameCount,
   heroFrameExt, setHeroFrameExt,
+  role = 'dev',
 }: Props) {
+  const isDev = role === 'dev';
   // Title Parts
   const addTitlePart = () => setTitleParts([...titleParts, { text: '', color: 'white' }]);
   const removeTitlePart = (i: number) => setTitleParts(titleParts.filter((_, idx) => idx !== i));
@@ -85,8 +89,8 @@ export default function TabHero({
         </CardContent>
       </Card>
 
-      {/* Badges */}
-      <Card>
+      {/* Badges — dev only */}
+      {isDev && <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Badges do Hero</CardTitle>
           <Button variant="outline" size="sm" onClick={addBadge}>
@@ -128,10 +132,10 @@ export default function TabHero({
             </div>
           ))}
         </CardContent>
-      </Card>
+      </Card>}
 
-      {/* Frame Animation */}
-      <Card>
+      {/* Frame Animation — dev only */}
+      {isDev && <Card>
         <CardHeader>
           <CardTitle>Animação de Frames</CardTitle>
         </CardHeader>
@@ -151,7 +155,7 @@ export default function TabHero({
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>}
     </div>
   );
 }

@@ -367,6 +367,30 @@ export interface Database {
           },
         ];
       };
+      profiles: {
+        Row: {
+          id:         string;
+          role:       'consultor' | 'gerente' | 'admin' | 'dev';
+          full_name:  string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id:          string;
+          role?:       'consultor' | 'gerente' | 'admin' | 'dev';
+          full_name?:  string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?:         string;
+          role?:       'consultor' | 'gerente' | 'admin' | 'dev';
+          full_name?:  string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       leads: {
         Row: {
           id: string;
@@ -432,7 +456,7 @@ export interface Database {
       [_ in never]: never;
     };
     Enums: {
-      [_ in never]: never;
+      user_role: 'consultor' | 'gerente' | 'admin' | 'dev';
     };
     CompositeTypes: {
       [_ in never]: never;

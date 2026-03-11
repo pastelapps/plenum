@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+import type { UserRole } from '@/types/user-roles';
+
 interface Props {
   slug: string; setSlug: (v: string) => void;
   title: string; setTitle: (v: string) => void;
@@ -23,6 +25,7 @@ interface Props {
   whatsappNumber: string; setWhatsappNumber: (v: string) => void;
   whatsappMessage: string; setWhatsappMessage: (v: string) => void;
   designSystems: Array<{ id: string; name: string; is_default: boolean }>;
+  role?: UserRole;
 }
 
 export default function TabGeral({
@@ -36,7 +39,9 @@ export default function TabGeral({
   whatsappNumber, setWhatsappNumber,
   whatsappMessage, setWhatsappMessage,
   designSystems,
+  role = 'dev',
 }: Props) {
+  const isDev = role === 'dev';
   const generateSlug = () => {
     const s = title
       .toLowerCase()
@@ -61,16 +66,18 @@ export default function TabGeral({
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Emendas Parlamentares na Prática" />
           </div>
 
-          <div className="space-y-2">
-            <Label>Slug *</Label>
-            <div className="flex gap-2">
-              <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="emendas-parlamentares" className="flex-1 font-mono text-sm" />
-              <button type="button" onClick={generateSlug} className="text-xs text-blue-600 hover:underline whitespace-nowrap">
-                Gerar do título
-              </button>
+          {isDev && (
+            <div className="space-y-2">
+              <Label>Slug *</Label>
+              <div className="flex gap-2">
+                <Input value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="emendas-parlamentares" className="flex-1 font-mono text-sm" />
+                <button type="button" onClick={generateSlug} className="text-xs text-blue-600 hover:underline whitespace-nowrap">
+                  Gerar do título
+                </button>
+              </div>
+              <p className="text-xs text-gray-400">URL: /cursos/{slug || '...'}</p>
             </div>
-            <p className="text-xs text-gray-400">URL: /cursos/{slug || '...'}</p>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label>Subtítulo</Label>
@@ -82,18 +89,20 @@ export default function TabGeral({
             <Input value={categoryLabel} onChange={(e) => setCategoryLabel(e.target.value)} placeholder="Imersão" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Rascunho</SelectItem>
-                  <SelectItem value="published">Publicado</SelectItem>
-                  <SelectItem value="archived">Arquivado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className={`grid gap-4 ${isDev ? 'grid-cols-2' : 'grid-cols-1 max-w-xs'}`}>
+            {isDev && (
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Rascunho</SelectItem>
+                    <SelectItem value="published">Publicado</SelectItem>
+                    <SelectItem value="archived">Arquivado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Modalidade</Label>
@@ -108,19 +117,21 @@ export default function TabGeral({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Design System</Label>
-            <Select value={designSystemId} onValueChange={setDesignSystemId}>
-              <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>
-                {designSystems.map((ds) => (
-                  <SelectItem key={ds.id} value={ds.id}>
-                    {ds.name} {ds.is_default ? '(padrão)' : ''}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {isDev && (
+            <div className="space-y-2">
+              <Label>Design System</Label>
+              <Select value={designSystemId} onValueChange={setDesignSystemId}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>
+                  {designSystems.map((ds) => (
+                    <SelectItem key={ds.id} value={ds.id}>
+                      {ds.name} {ds.is_default ? '(padrão)' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </CardContent>
       </Card>
 
