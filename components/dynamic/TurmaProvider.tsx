@@ -33,6 +33,8 @@ export interface TurmaContextValue {
   locationExtra: LocationExtra[];
   /** Active turma ID (for forms) */
   courseDateId: string | undefined;
+  /** Active turma folder PDF URL */
+  folderPdfUrl: string | null;
   /** Hero badges with dynamic values replaced */
   heroBadges: HeroBadge[];
 }
@@ -75,6 +77,7 @@ export default function TurmaProvider({ dates, heroBadges, children }: TurmaProv
     const locationMapEmbed = activeCourseDate?.location_map_embed || '';
     const locationExtra = activeCourseDate?.location_extra || [];
     const courseDateId = activeCourseDate?.id;
+    const folderPdfUrl = activeCourseDate?.folder_pdf_url || null;
 
     // Build dynamic hero badges:
     // - "dropdown" → turma selector (handled in Hero)
@@ -102,6 +105,7 @@ export default function TurmaProvider({ dates, heroBadges, children }: TurmaProv
       locationMapEmbed,
       locationExtra,
       courseDateId,
+      folderPdfUrl,
       heroBadges: dynamicBadges,
     };
   }, [dates, heroBadges, selectedIndex]);

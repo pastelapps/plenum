@@ -203,6 +203,7 @@ export interface CourseDate {
   max_students: number | null;
   status: 'open' | 'closed' | 'cancelled' | 'paused';
   sort_order: number;
+  folder_pdf_url: string | null;
   created_at: string;
 }
 

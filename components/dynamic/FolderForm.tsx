@@ -27,7 +27,9 @@ export default function FolderForm({
   headingSecondary = 'Completo do Evento',
   subtitle = 'Tenha acesso a programação detalhada, currículo completo dos palestrantes e informações sobre o investimento.',
 }: FolderFormProps) {
-  const { courseDateId } = useTurma();
+  const { courseDateId, folderPdfUrl } = useTurma();
+  // Use turma-specific PDF if available, otherwise fall back to course-level PDF
+  const activePdfUrl = folderPdfUrl || pdfUrl || null;
   const sectionRef = useRef<HTMLElement>(null);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({
@@ -84,8 +86,8 @@ export default function FolderForm({
       if (data.success) {
         setSubmitted(true);
         // Allow PDF download whether lead is new or existing
-        if (pdfUrl) {
-          window.open(pdfUrl, '_blank');
+        if (activePdfUrl) {
+          window.open(activePdfUrl, '_blank');
         }
       }
     } catch {

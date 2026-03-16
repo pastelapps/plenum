@@ -17,6 +17,7 @@ import {
   MapPin,
   Users,
   Calendar,
+  Eye,
 } from 'lucide-react';
 import type { CourseWithDatesPreview, CourseDatePreview } from '@/lib/queries/courses';
 import { cloneCourseDate, toggleCourseDateStatus } from '@/lib/actions/courses';
@@ -270,6 +271,20 @@ function TurmaRow({
             ) : (
               <Play className="w-3.5 h-3.5 text-green-500" />
             )}
+          </Button>
+        )}
+
+        {/* Ver PDF */}
+        {turma.folder_pdf_url && (
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            title="Ver PDF"
+          >
+            <a href={turma.folder_pdf_url} target="_blank" rel="noopener noreferrer">
+              <Eye className="w-3.5 h-3.5 text-purple-500" />
+            </a>
           </Button>
         )}
 

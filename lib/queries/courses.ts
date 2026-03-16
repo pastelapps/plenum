@@ -180,6 +180,7 @@ export async function getAllCoursesWithDates(): Promise<CourseWithDatesPreview[]
         ? ids.map(id => instructorNamesMap.get(id) || 'Sem instrutor')
         : ['Sem instrutor'],
       max_students: d.max_students as number | null,
+      folder_pdf_url: (d.folder_pdf_url as string) || null,
     });
   }
 
@@ -199,6 +200,7 @@ export interface CourseDatePreview {
   location_venue: string;
   instructor_names: string[];
   max_students: number | null;
+  folder_pdf_url: string | null;
 }
 
 /** Course with lightweight dates for dashboard */
