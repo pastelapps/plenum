@@ -28,9 +28,9 @@ export default function Consultoria() {
     ];
 
     return (
-        <section id="consultoria" ref={sectionRef} className="consultoria-section relative py-24 lg:py-36 overflow-hidden" style={{ background: "linear-gradient(135deg, #0f2b50 0%, #1a4b8c 40%, #1e5599 60%, #163d6e 100%)" }}>
-            <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <section id="consultoria" ref={sectionRef} className="consultoria-section relative py-14 lg:py-36 overflow-hidden" style={{ background: "linear-gradient(180deg, #030D1F 0%, #0a1628 30%, #0d1b30 60%, #081422 100%)" }}>
+            <div className="max-w-[1280px] mx-auto px-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-24 items-center">
                     {/* Text side */}
                     <div className="consult-text">
                         <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/20 rounded-full text-[11px] font-semibold tracking-widest text-white/90 uppercase mb-6">
@@ -64,11 +64,11 @@ export default function Consultoria() {
 
                     {/* Image side */}
                     <div className="consult-image relative">
-                        <div className="rounded-[24px] overflow-hidden aspect-[4/5]">
+                        <div className="rounded-[16px] lg:rounded-[24px] overflow-hidden aspect-[4/3] lg:aspect-[4/5]">
                             <img
                                 src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1000&auto=format&fit=crop"
                                 alt="Consultoria Plenum"
-                                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                                className="w-full h-full object-cover transition-all duration-700"
                             />
                         </div>
                         {/* Decorative accent */}

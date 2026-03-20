@@ -76,26 +76,39 @@ export default function SocialProof() {
     const sectionRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-        const ctx = gsap.context(() => {
-            gsap.from(".stat-item", {
-                opacity: 0, y: 40, duration: 0.7, stagger: 0.1, ease: "power3.out",
-                scrollTrigger: { trigger: ".stats-grid", start: "top 80%" }
-            });
+        if (!sectionRef.current) return;
 
-            gsap.from(".proof-title", {
-                opacity: 0, y: 30, duration: 0.7, ease: "power3.out",
-                scrollTrigger: { trigger: ".social-proof-section", start: "top 80%" }
-            });
-        }, sectionRef);
+        const timer = setTimeout(() => {
+            const ctx = gsap.context(() => {
+                const statsGrid = sectionRef.current?.querySelector(".stats-grid");
+                const proofTitle = sectionRef.current?.querySelector(".proof-title");
 
-        return () => ctx.revert();
+                if (statsGrid) {
+                    gsap.from(".stat-item", {
+                        opacity: 0, y: 40, duration: 0.7, stagger: 0.1, ease: "power3.out",
+                        scrollTrigger: { trigger: statsGrid, start: "top 80%" }
+                    });
+                }
+
+                if (proofTitle) {
+                    gsap.from(proofTitle, {
+                        opacity: 0, y: 30, duration: 0.7, ease: "power3.out",
+                        scrollTrigger: { trigger: sectionRef.current, start: "top 80%" }
+                    });
+                }
+            }, sectionRef);
+
+            return () => ctx.revert();
+        }, 100);
+
+        return () => clearTimeout(timer);
     }, []);
 
     return (
-        <section id="sobre" ref={sectionRef} className="social-proof-section relative bg-[#030D1F] py-24 lg:py-36 overflow-hidden grain-overlay">
-            <div className="max-w-[1320px] mx-auto px-6 lg:px-10 relative z-10">
+        <section id="sobre" ref={sectionRef} className="social-proof-section relative bg-[#030D1F] py-14 lg:py-36 overflow-hidden grain-overlay">
+            <div className="max-w-[1280px] mx-auto px-4 relative z-10">
                 {/* Section title */}
-                <div className="proof-title text-center mb-16 lg:mb-24">
+                <div className="proof-title text-center mb-10 lg:mb-24">
                     <h2 className="text-display-lg text-white mb-4">IMPACTO REAL</h2>
                     <p className="text-sm italic text-white/50 tracking-wide uppercase">
                         Números que comprovam nossa transformação
@@ -103,7 +116,7 @@ export default function SocialProof() {
                 </div>
 
                 {/* Stats grid — 4 columns */}
-                <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-20 lg:mb-28">
+                <div className="stats-grid grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-12 mb-14 lg:mb-28">
                     {STATS.map((stat, i) => (
                         <div key={i} className="stat-item text-center">
                             <CountUp
@@ -134,7 +147,7 @@ export default function SocialProof() {
                 </div>
 
                 {/* Testimonial */}
-                <div className="mt-20 lg:mt-28 max-w-3xl mx-auto text-center">
+                <div className="mt-14 lg:mt-28 max-w-3xl mx-auto text-center">
                     <blockquote className="text-display-md text-white/90 italic mb-8 leading-snug">
                         &ldquo;A Plenum transformou a forma como nossa equipe pensa gestão pública. Resultado direto no dia a dia.&rdquo;
                     </blockquote>

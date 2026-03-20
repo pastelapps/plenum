@@ -130,14 +130,11 @@ export default function Academy() {
     }, []);
 
     return (
-        <section id="academy" ref={sectionRef} className="academy-section bg-[#F1F1F1] py-20 lg:py-32">
-            <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
+        <section id="academy" ref={sectionRef} className="academy-section bg-[#F1F1F1] py-14 lg:py-32">
+            <div className="max-w-[1280px] mx-auto px-4">
                 {/* Header */}
                 <div className="academy-header text-center mb-12 lg:mb-16">
-                    <h2 className="text-display-lg text-[#030D1F] mb-4">NOSSOS CURSOS</h2>
-                    <p className="text-sm italic text-[#555] tracking-wide uppercase mb-10">
-                        Treinamentos feitos por quem entende do setor público
-                    </p>
+                    <h2 className="text-display-lg text-[#030D1F] mb-6 lg:mb-10">NOSSOS CURSOS</h2>
 
                     {/* Filter chips - scrollable on mobile */}
                     <div className="overflow-x-auto hide-scrollbar -mx-6 px-6 lg:mx-0 lg:px-0">
@@ -156,12 +153,12 @@ export default function Academy() {
                 </div>
 
                 {/* Course Grid — 3x3 — original card style */}
-                <div className="academy-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
+                <div className="academy-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
                     {filteredCourses.map((course) => (
                         <a
                             key={course.id}
                             href={course.url}
-                            className="group relative block h-[380px] sm:h-[420px] lg:h-[460px] rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.25)] hover:shadow-[0_24px_60px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                            className="group relative block h-[430px] sm:h-[470px] lg:h-[500px] rounded-[20px] sm:rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.25)] hover:shadow-[0_24px_60px_rgba(0,0,0,0.35)] hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                         >
                             {/* Background image */}
                             <img
@@ -170,7 +167,7 @@ export default function Academy() {
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                 draggable={false}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#030D1F]/85 via-[#030D1F]/30 to-[#030D1F]/5" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#030D1F]/90 via-[#030D1F]/30 to-[#030D1F]/5" />
 
                             {/* Badge — tag do curso */}
                             <div className="absolute top-5 left-5 z-10">
@@ -180,22 +177,34 @@ export default function Academy() {
                                 </span>
                             </div>
 
-                            {/* Bottom content */}
+                            {/* Bottom content — title, date, location, ver curso */}
                             <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
-                                <div className="flex items-center gap-4 flex-wrap">
-                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-transparent border border-white/25 rounded-full text-[11px] font-medium text-white tracking-wider uppercase group-hover:bg-white/10 transition-all">
-                                        Ver Curso <ArrowRight className="w-3 h-3" />
+                                {/* Title */}
+                                <h4 className="text-[20px] lg:text-[22px] font-display font-semibold text-white leading-tight mb-3">
+                                    {course.title}
+                                </h4>
+
+                                {/* Date — prominent */}
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Calendar className="w-4 h-4 text-[#C9A227]" />
+                                    <span className="text-[15px] font-semibold text-white tracking-wide">
+                                        {course.date}
                                     </span>
-                                    <div className="flex items-center gap-3">
-                                        <span className="inline-flex items-center gap-1.5 text-[11px] text-white/60">
-                                            <Calendar className="w-3 h-3 text-[#C9A227]" />
-                                            {course.date}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1.5 text-[11px] text-white/60">
-                                            <MapPin className="w-3 h-3 text-[#C9A227]" />
-                                            {course.location}
-                                        </span>
-                                    </div>
+                                </div>
+
+                                {/* Location — same size as date */}
+                                <div className="flex items-center gap-2 mb-4">
+                                    <MapPin className="w-4 h-4 text-[#C9A227]" />
+                                    <span className="text-[15px] font-semibold text-white tracking-wide">
+                                        {course.location}
+                                    </span>
+                                </div>
+
+                                {/* Ver Curso — aligned right */}
+                                <div className="flex justify-end">
+                                    <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 border border-white/25 rounded-full text-[12px] font-semibold text-white tracking-wider uppercase group-hover:bg-white/20 transition-all">
+                                        Ver Curso <ArrowRight className="w-3.5 h-3.5" />
+                                    </span>
                                 </div>
                             </div>
                         </a>

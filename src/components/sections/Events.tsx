@@ -50,8 +50,8 @@ export default function Events() {
     const sectionRef = useRef<HTMLElement>(null);
     const [current, setCurrent] = useState(0);
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const touchStartX = useRef(0);
 
-    // Sem animação de entrada — conteúdo já visível ao carregar
     useEffect(() => {}, []);
 
     const nextSlide = useCallback(() => {
@@ -73,10 +73,19 @@ export default function Events() {
     }, [resetTimer]);
 
     return (
-        <section id="eventos" ref={sectionRef} className="events-section overflow-hidden relative bg-[#030D1F]">
-            {/* Slideshow — full width, edge to edge, directly below hero */}
-            <div className="events-slideshow relative w-full h-[520px] md:h-[580px] lg:h-[700px] overflow-hidden">
-                    {/* Slides */}
+        <section id="eventos" ref={sectionRef} className="events-section overflow-hidden relative bg-[#F1F1F1] py-10 lg:py-16">
+            <div className="max-w-[1280px] mx-auto px-4">
+                <div
+                    className="events-slideshow relative w-full h-[440px] md:h-[580px] lg:h-[700px] overflow-hidden rounded-[16px] md:rounded-[24px]"
+                    onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+                    onTouchEnd={(e) => {
+                        const diff = touchStartX.current - e.changedTouches[0].clientX;
+                        if (Math.abs(diff) > 50) {
+                            if (diff > 0) { nextSlide(); } else { prevSlide(); }
+                            resetTimer();
+                        }
+                    }}
+                >
                     {EVENTS.map((event, i) => (
                         <div
                             key={event.id}
@@ -87,31 +96,25 @@ export default function Events() {
                             }`}
                             style={{ backgroundImage: `url(${event.image})`, backgroundSize: "cover", backgroundPosition: "center" }}
                         >
-                            {/* Overlay */}
                             <div className="absolute inset-0 bg-gradient-to-r from-[#030D1F]/85 via-[#030D1F]/50 to-[#030D1F]/20" />
 
-                            {/* Content */}
-                            <div className={`absolute inset-0 flex flex-col justify-center px-8 md:px-14 lg:px-20 transition-all duration-500 delay-200 ${
+                            <div className={`absolute inset-0 flex flex-col justify-center px-6 md:px-14 lg:px-20 transition-all duration-500 delay-200 ${
                                 i === current ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
                             }`}>
                                 <div className="max-w-[580px]">
-                                    {/* Badge */}
                                     <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/25 rounded-full text-[11px] font-semibold tracking-[0.2em] text-white uppercase mb-5">
                                         <span className="w-2 h-2 rounded-full bg-[#C9A227]" />
                                         {event.badge}
                                     </span>
 
-                                    {/* Title */}
-                                    <h3 className="text-[28px] md:text-[40px] lg:text-[50px] leading-[1.02] font-display font-semibold text-white mb-4 uppercase">
+                                    <h3 className="text-[24px] md:text-[40px] lg:text-[50px] leading-[1.05] font-display font-semibold text-white mb-3 md:mb-4 uppercase">
                                         {event.title}
                                     </h3>
 
-                                    {/* Description */}
-                                    <p className="text-base md:text-lg text-white/65 mb-8 leading-relaxed max-w-md">
+                                    <p className="text-sm md:text-lg text-white/65 mb-6 md:mb-8 leading-relaxed max-w-md">
                                         {event.description}
                                     </p>
 
-                                    {/* CTA */}
                                     <a
                                         href={event.url}
                                         className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#C9A227] hover:bg-[#e4bc44] text-[#030D1F] text-sm font-semibold uppercase tracking-wide transition-all hover:shadow-[0_8px_30px_rgba(201,162,39,0.3)]"
@@ -124,28 +127,25 @@ export default function Events() {
                         </div>
                     ))}
 
-                    {/* Navigation arrows */}
                     <button
                         onClick={() => { prevSlide(); resetTimer(); }}
-                        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-white/25 bg-[#030D1F]/40 backdrop-blur-sm hover:bg-white/15 flex items-center justify-center transition-all"
+                        className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-white/25 bg-[#030D1F]/40 backdrop-blur-sm hover:bg-white/15 items-center justify-center transition-all"
                         aria-label="Evento anterior"
                     >
                         <ArrowLeft className="w-5 h-5 text-white" />
                     </button>
                     <button
                         onClick={() => { nextSlide(); resetTimer(); }}
-                        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-white/25 bg-[#030D1F]/40 backdrop-blur-sm hover:bg-white/15 flex items-center justify-center transition-all"
+                        className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full border border-white/25 bg-[#030D1F]/40 backdrop-blur-sm hover:bg-white/15 items-center justify-center transition-all"
                         aria-label="Próximo evento"
                     >
                         <ArrowRight className="w-5 h-5 text-white" />
                     </button>
 
-                    {/* Counter */}
                     <div className="absolute bottom-6 right-6 md:bottom-8 md:right-8 z-20 text-white/50 text-sm font-display font-medium tracking-widest">
                         0{current + 1} / 0{EVENTS.length}
                     </div>
 
-                    {/* Progress dots */}
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
                         {EVENTS.map((_, idx) => (
                             <button
@@ -159,6 +159,7 @@ export default function Events() {
                         ))}
                     </div>
                 </div>
+            </div>
         </section>
     );
 }

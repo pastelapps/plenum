@@ -28,12 +28,12 @@ export default function Corporativa() {
     ];
 
     return (
-        <section id="empresas" ref={sectionRef} className="corporativa-section bg-[#F1F1F1] py-24 lg:py-36">
-            <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <section id="empresas" ref={sectionRef} className="corporativa-section bg-[#F1F1F1] py-14 lg:py-36">
+            <div className="max-w-[1280px] mx-auto px-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-24 items-center">
                     {/* Image side — left */}
                     <div className="corp-image relative order-2 lg:order-1">
-                        <div className="rounded-[24px] overflow-hidden aspect-[4/5]">
+                        <div className="rounded-[16px] lg:rounded-[24px] overflow-hidden aspect-[4/3] lg:aspect-[4/5]">
                             <img
                                 src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop"
                                 alt="Corporativa Plenum"

@@ -56,18 +56,15 @@ export default function Blog() {
     }, []);
 
     return (
-        <section id="blog" ref={sectionRef} className="bg-[#F1F1F1] py-20 lg:py-32">
-            <div className="max-w-[1320px] mx-auto px-6 lg:px-10">
-                <div className="text-center mb-14 lg:mb-20">
-                    <h2 className="text-display-lg text-[#030D1F] mb-4">INSIGHTS</h2>
-                    <p className="text-sm italic text-[#555] tracking-wide uppercase">
-                        Conteúdos para quem quer liderar a transformação
-                    </p>
+        <section id="blog" ref={sectionRef} className="bg-[#F1F1F1] py-14 lg:py-32">
+            <div className="max-w-[1280px] mx-auto px-4">
+                <div className="text-center mb-10 lg:mb-20">
+                    <h2 className="text-display-lg text-[#030D1F] mb-4">NOTÍCIAS</h2>
                 </div>
 
-                <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+                <div className="blog-grid grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 lg:gap-6">
                     {POSTS.map((post) => (
-                        <a key={post.id} href={`/blog/${post.slug}`} className="blog-card group block rounded-[24px] overflow-hidden bg-white/60 border border-[#030D1F]/[0.04] hover:shadow-xl transition-shadow">
+                        <a key={post.id} href={`/blog/${post.slug}`} className="blog-card group block rounded-[16px] md:rounded-[24px] overflow-hidden bg-white/60 border border-[#030D1F]/[0.04] hover:shadow-xl transition-shadow">
                             <div className="aspect-[16/10] overflow-hidden">
                                 <img
                                     src={post.image}
@@ -75,7 +72,7 @@ export default function Blog() {
                                     className="blog-card-img w-full h-full object-cover transform-gpu"
                                 />
                             </div>
-                            <div className="p-6 lg:p-7">
+                            <div className="p-5 md:p-6 lg:p-7">
                                 <div className="flex items-center gap-3 mb-4">
                                     <span className="text-[10px] font-semibold tracking-widest text-[#C9A227] uppercase">
                                         {post.category}

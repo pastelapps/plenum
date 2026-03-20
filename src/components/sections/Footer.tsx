@@ -49,7 +49,7 @@ export default function Footer() {
     return (
         <footer id="contato" ref={footerRef} className="footer relative bg-[#030D1F] overflow-hidden">
             {/* Newsletter CTA section — like HA newsletter */}
-            <div className="relative py-24 lg:py-32 overflow-hidden">
+            <div className="relative py-14 lg:py-32 overflow-hidden">
                 <div className="absolute inset-0">
                     <img
                         src="https://images.unsplash.com/photo-1577985043696-8bd54d9f093f?q=80&w=2070&auto=format&fit=crop"
@@ -59,7 +59,7 @@ export default function Footer() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#030D1F] via-[#030D1F]/80 to-[#030D1F]/60" />
                 </div>
 
-                <div className="relative z-10 max-w-[1320px] mx-auto px-6 lg:px-10">
+                <div className="relative z-10 max-w-[1280px] mx-auto px-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                         <div className="footer-content">
                             <div className="flex items-center gap-3 mb-4">
@@ -77,7 +77,7 @@ export default function Footer() {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="QUERO ME INSCREVER"
-                                        className="flex-1 bg-[#C9A227] text-[#030D1F] placeholder-[#030D1F]/60 px-6 py-4 rounded-l-full text-sm font-semibold tracking-wider uppercase focus:outline-none"
+                                        className="flex-1 min-w-0 bg-[#C9A227] text-[#030D1F] placeholder-[#030D1F]/60 px-4 md:px-6 py-3.5 md:py-4 rounded-l-full text-xs md:text-sm font-semibold tracking-wider uppercase focus:outline-none"
                                     />
                                     <button type="submit" className="bg-white text-[#030D1F] px-5 py-4 rounded-r-full hover:bg-white/90 transition-colors">
                                         <ArrowRight className="w-5 h-5" />
@@ -107,8 +107,8 @@ export default function Footer() {
 
             {/* Link columns — like HA footer directory */}
             <div className="border-t border-white/[0.06]">
-                <div className="max-w-[1320px] mx-auto px-6 lg:px-10 py-14 lg:py-16">
-                    <div className="footer-content grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16 mb-16">
+                <div className="max-w-[1280px] mx-auto px-4 py-10 lg:py-16">
+                    <div className="footer-content grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-16 mb-12 md:mb-16">
                         {/* First column: Logo + description */}
                         <div className="col-span-2 md:col-span-1">
                             <img src="/logo-plenum-aberta2.png" alt="Plenum Academy" className="h-8 w-auto object-contain" />

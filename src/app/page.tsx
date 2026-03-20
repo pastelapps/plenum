@@ -10,8 +10,11 @@ import Enderecos from "@/components/sections/Enderecos";
 import Blog from "@/components/sections/Blog";
 import Instagram from "@/components/sections/Instagram";
 import Footer from "@/components/sections/Footer";
+import { getInstagramPosts } from "@/lib/instagram";
 
-export default function Home() {
+export default async function Home() {
+  const instagramPosts = await getInstagramPosts();
+
   return (
     <main className="text-[#030D1F] overflow-x-hidden">
       <Header />
@@ -25,9 +28,9 @@ export default function Home() {
         <Consultoria />
         <Corporativa />
         <BrasilInteiro />
-        <Enderecos />
         <Blog />
-        <Instagram />
+        <Instagram posts={instagramPosts} />
+        <Enderecos />
         <Footer />
       </div>
     </main>
