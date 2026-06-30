@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+import "./globals.css";
+import WhatsAppFloat from "@/components/sections/WhatsAppFloat";
+
+export const metadata: Metadata = {
+  title: "Instituto Plenum Brasil",
+  description: "Escola global de liderança e inovação para o setor público. Educação executiva, cursos, eventos e consultoria.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+      </head>
+      <body className="antialiased" suppressHydrationWarning>
+        {children}
+        <WhatsAppFloat />
+      </body>
+    </html>
+  );
+}
