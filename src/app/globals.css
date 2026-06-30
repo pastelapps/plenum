@@ -203,10 +203,11 @@ body {
 
 .text-stat {
   font-family: 'Outfit', sans-serif;
-  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
   font-weight: 300;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
 }
 
 .text-gold-gradient {

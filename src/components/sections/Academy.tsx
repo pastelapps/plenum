@@ -37,7 +37,7 @@ export default function Academy() {
             <div className="max-w-[1280px] mx-auto px-4">
                 <div className="academy-header text-center mb-12 lg:mb-16">
                     <p className="text-label text-[#8a6e1a] mb-3">Plenum Academy</p>
-                    <h2 className="text-display-lg text-[#030D1F] mb-4">Formação executiva para todas as esferas do setor público</h2>
+                    <h2 className="text-display-lg text-[#030D1F] mb-4 max-w-4xl mx-auto">Formação executiva para todas<br className="hidden md:block" /> as esferas do setor público</h2>
                     <p className="text-body text-[#555] max-w-2xl mx-auto mb-8">
                         Cursos presenciais e híbridos para servidores, lideranças, municípios, órgãos de controle, estatais e legislativos.
                     </p>
